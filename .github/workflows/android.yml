@@ -79,7 +79,7 @@ jobs:
           npx cap sync android
 
       - name: Create CI keystore
-        working-directory: android
+        working-directory: android/app
         run: |
           keytool -genkeypair -v \
             -keystore perch-ci.jks \
