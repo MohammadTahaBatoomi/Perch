@@ -1,17 +1,3 @@
-const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
-
-export function toPersianDigits(input: string | number): string {
-  return String(input).replace(/\d/g, (d) => PERSIAN_DIGITS[Number(d)] ?? d);
-}
-
-export function formatDigits(
-  input: string | number,
-  persian: boolean,
-): string {
-  const s = String(input);
-  return persian ? toPersianDigits(s) : s;
-}
-
 export function pad2(n: number): string {
   return n.toString().padStart(2, "0");
 }

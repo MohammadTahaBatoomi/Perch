@@ -2,14 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pause, Play, RotateCcw } from "lucide-react";
-import { formatDigits, pad2 } from "@/lib/format";
-import { useSettings } from "@/features/settings/settings-provider";
+import { pad2 } from "@/lib/format";
+import { strings } from "@/lib/strings";
 
 const WORK = 25 * 60;
 const BREAK = 5 * 60;
 
 export function PomodoroBar() {
-  const { settings } = useSettings();
   const [mode, setMode] = useState<"work" | "break">("work");
   const [seconds, setSeconds] = useState(WORK);
   const [running, setRunning] = useState(false);
@@ -62,7 +61,6 @@ export function PomodoroBar() {
 
   const mm = pad2(Math.floor(seconds / 60));
   const ss = pad2(seconds % 60);
-  const d = settings.persianDigits;
 
   return (
     <div
@@ -71,16 +69,16 @@ export function PomodoroBar() {
       }`}
     >
       <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted">
-        {mode === "work" ? "Focus" : "Break"}
+        {mode === "work" ? strings.pomodoro.focus : strings.pomodoro.break}
       </span>
       <span className="font-mono tabular-nums text-foreground">
-        {formatDigits(mm, d)}:{formatDigits(ss, d)}
+        {mm}:{ss}
       </span>
       <button
         type="button"
         onClick={toggle}
         className="btn-icon"
-        aria-label={running ? "Pause pomodoro" : "Start pomodoro"}
+        aria-label={running ? strings.pomodoro.pause : strings.pomodoro.start}
       >
         {running ? (
           <Pause size={14} strokeWidth={2} />
@@ -92,7 +90,7 @@ export function PomodoroBar() {
         type="button"
         onClick={reset}
         className="btn-icon"
-        aria-label="Reset pomodoro"
+        aria-label={strings.pomodoro.reset}
       >
         <RotateCcw size={14} strokeWidth={2} />
       </button>

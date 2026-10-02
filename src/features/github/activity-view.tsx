@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import Link from "next/link";
 import { relativeTime } from "@/lib/format";
+import { strings } from "@/lib/strings";
 import { useSettings } from "@/features/settings/settings-provider";
 
 type Day = { date: string; count: number };
@@ -69,12 +70,12 @@ export function ActivityView() {
       <div className="card flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
         <p className="text-sm text-muted">
           {unauthorized
-            ? "Connect GitHub first to see activity."
-            : error.message || "Could not load activity"}
+            ? strings.activity.connectFirst
+            : error.message || strings.activity.couldNotLoad}
         </p>
         {unauthorized && (
           <Link href="/" className="btn-accent text-xs">
-            Go to Home
+            {strings.activity.goHome}
           </Link>
         )}
       </div>
@@ -84,7 +85,7 @@ export function ActivityView() {
   if (!data) {
     return (
       <div className="card flex h-full items-center justify-center p-6 text-sm text-muted">
-        No activity data yet.
+        {strings.activity.noData}
       </div>
     );
   }
@@ -105,7 +106,7 @@ export function ActivityView() {
         <div className="flex shrink-0 items-start justify-between gap-3">
           <div>
             <h1 className="text-sm font-semibold tracking-tight text-foreground">
-              Activity
+              {strings.activity.title}
             </h1>
             <p className="mt-0.5 text-[11px] text-muted">{data.limitation}</p>
           </div>
@@ -119,7 +120,7 @@ export function ActivityView() {
             className="h-[120px] w-full sm:h-[140px]"
             preserveAspectRatio="xMinYMid meet"
             role="img"
-            aria-label="12-week activity heatmap"
+            aria-label={strings.activity.heatmapAria}
           >
             {weeks.map((week, wi) =>
               week.map((day, di) => (
@@ -143,7 +144,7 @@ export function ActivityView() {
           </svg>
         </div>
         <div className="flex shrink-0 items-center gap-1.5 text-[10px] text-muted">
-          <span>Less</span>
+          <span>{strings.activity.less}</span>
           {[0, 1, 2, 3, 5].map((c) => (
             <span
               key={c}
@@ -151,18 +152,16 @@ export function ActivityView() {
               style={{ background: level(c) }}
             />
           ))}
-          <span>More</span>
+          <span>{strings.activity.more}</span>
         </div>
       </section>
 
       <section className="card flex min-h-0 flex-col overflow-hidden p-3">
         <h2 className="shrink-0 text-xs font-semibold tracking-tight text-foreground/80">
-          Recent
+          {strings.activity.recent}
         </h2>
         {data.recent.length === 0 ? (
-          <p className="mt-3 text-sm text-muted">
-            No recent GitHub events in the feed yet.
-          </p>
+          <p className="mt-3 text-sm text-muted">{strings.activity.noEvents}</p>
         ) : (
           <ul className="mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto">
             {data.recent.map((item) => (

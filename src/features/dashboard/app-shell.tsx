@@ -29,10 +29,11 @@ import { RepoSelectSheet } from "@/features/github/github-card";
 import { SettingsDrawer } from "@/features/settings/settings-drawer";
 import { AmbientBackground } from "@/features/shell/ambient";
 import { useGlassSheen } from "@/lib/glass-sheen";
+import { strings } from "@/lib/strings";
 
 const NAV = [
-  { href: "/", label: "Home" },
-  { href: "/activity", label: "Activity" },
+  { href: "/", label: strings.nav.home },
+  { href: "/activity", label: strings.nav.activity },
 ] as const;
 
 const ShellCtx = createContext<{ openRepos: () => void } | null>(null);
@@ -47,22 +48,22 @@ function WakeIndicator({ status }: { status: WakeStatus }) {
   const map = {
     active: {
       icon: ShieldCheck,
-      label: "Awake",
+      label: strings.wake.active,
       className: "text-success",
     },
     fallback: {
       icon: MonitorSmartphone,
-      label: "Fallback",
+      label: strings.wake.fallback,
       className: "text-warning",
     },
     unavailable: {
       icon: ShieldOff,
-      label: "No wake lock",
+      label: strings.wake.unavailable,
       className: "text-danger",
     },
     idle: {
       icon: ShieldAlert,
-      label: "Tap to keep awake",
+      label: strings.wake.idle,
       className: "text-muted",
     },
   } as const;
@@ -72,9 +73,7 @@ function WakeIndicator({ status }: { status: WakeStatus }) {
     <span
       className={`inline-flex items-center gap-1 text-[10px] font-medium ${m.className}`}
       title={
-        status === "unavailable"
-          ? "Wake Lock needs a secure context (HTTPS). Using plain HTTP on LAN often blocks it."
-          : undefined
+        status === "unavailable" ? strings.wake.unavailableHint : undefined
       }
     >
       <Icon size={12} strokeWidth={2} />
@@ -131,7 +130,7 @@ function NavPills() {
   }, [activeIndex, pathname]);
 
   return (
-    <nav ref={trackRef} className="nav-pill" aria-label="Primary">
+    <nav ref={trackRef} className="nav-pill" aria-label={strings.nav.primary}>
       <span
         className="nav-pill__thumb"
         style={{
@@ -187,7 +186,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           data-condensed={condensed}
         >
           <Link href="/" className="brand">
-            Perch
+            {strings.app.name}
           </Link>
           <NavPills />
           <div className="ms-auto flex items-center gap-1.5">
@@ -196,7 +195,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               type="button"
               onClick={() => void toggleFs()}
               className="btn-icon"
-              aria-label={fs ? "Exit fullscreen" : "Enter fullscreen"}
+              aria-label={
+                fs
+                  ? strings.chrome.exitFullscreen
+                  : strings.chrome.enterFullscreen
+              }
             >
               {fs ? <Minimize2 size={14} strokeWidth={2} /> : <Maximize2 size={14} strokeWidth={2} />}
             </button>
@@ -207,15 +210,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="shell__main">{children}</main>
 
         <RepoSelectSheet open={reposOpen} onClose={() => setReposOpen(false)} />
-
-        <div
-          className="pointer-events-none fixed inset-0 bg-black transition-opacity duration-700"
-          style={{
-            zIndex: "var(--z-night)",
-            opacity: "var(--night-dim-opacity, 0)",
-          }}
-          aria-hidden
-        />
         <Moon className="sr-only" />
       </div>
     </ShellCtx.Provider>

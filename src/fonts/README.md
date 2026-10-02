@@ -1,8 +1,6 @@
 # Fonts
 
-- `Geist-*.woff2` — Latin sans/mono (from Next.js bundled Geist)
-- `Vazirmatn-*.ttf` — Persian/Arabic glyphs
+- `Geist-*.woff2` — Latin sans (variable weight 100–900)
+- `GeistMono-*.woff2` — monospace for codes and brand mark
 
-Replace the Vazirmatn files with official releases from
-https://github.com/rastikerdar/vazirmatn when convenient. The filenames are the
-contract used by `src/app/layout.tsx`.
+English-only app; no additional script fonts required.

@@ -1,15 +1,18 @@
 import type { MetadataRoute } from "next";
+import { strings } from "@/lib/strings";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Perch",
-    short_name: "Perch",
-    description: "Desk companion for developers",
+    name: strings.app.name,
+    short_name: strings.app.name,
+    description: strings.app.shortDescription,
     start_url: "/",
     display: "fullscreen",
     orientation: "landscape",
     background_color: "#050508",
     theme_color: "#050508",
+    lang: "en",
+    dir: "ltr",
     icons: [
       {
         src: "/icon.svg",

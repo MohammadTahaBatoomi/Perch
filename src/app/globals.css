@@ -143,7 +143,6 @@ html[data-theme="light"] {
   --color-danger: var(--danger);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
-  --font-vazir: var(--font-vazir);
   --radius-xs: var(--radius-xs);
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
@@ -167,7 +166,7 @@ body {
 }
 
 body {
-  font-family: var(--font-sans), var(--font-vazir), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -199,13 +198,6 @@ body {
 
 *::-webkit-scrollbar-track {
   background: transparent;
-}
-
-/* Vazirmatn: medium+ weight on glass for AA readability */
-.font-vazir {
-  font-family: var(--font-vazir), var(--font-sans), system-ui, sans-serif;
-  font-weight: 700;
-  letter-spacing: 0;
 }
 
 .font-mono {
@@ -1070,5 +1062,455 @@ body {
   .field {
     background: #0a0a0c;
     box-shadow: inset 0 0 0 1px #3f3f46;
+  }
+
+  .standby-digital--glass .standby-digit {
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    color: #fafafa;
+    filter: none;
+    text-shadow: none;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   StandBy clock (iOS 26–inspired)
+   ───────────────────────────────────────────── */
+
+.home-standby {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  block-size: 100%;
+  inline-size: 100%;
+  gap: 0.5rem;
+  container-type: size;
+  container-name: standby;
+}
+
+.home-standby__hero {
+  display: grid;
+  place-items: center;
+  min-block-size: 0;
+  padding-block: 0.25rem;
+  padding-inline: 0.5rem;
+}
+
+.home-standby__periphery {
+  min-block-size: 0;
+  max-block-size: 38%;
+  padding-inline: 0.15rem;
+}
+
+@media (orientation: landscape), (min-width: 700px) {
+  .home-standby {
+    grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.42fr);
+    grid-template-rows: 1fr;
+  }
+
+  .home-standby__periphery {
+    max-block-size: none;
+    block-size: 100%;
+  }
+}
+
+.standby-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  inline-size: min(100%, 92cqw);
+  max-inline-size: 100%;
+  text-align: center;
+}
+
+@media (orientation: portrait) and (max-width: 699px) {
+  .standby-hero {
+    inline-size: 80%;
+  }
+}
+
+.standby-hero__skeleton {
+  inline-size: min(70cqw, 18rem);
+  block-size: 4.5rem;
+}
+
+.standby-hero__date {
+  margin: 0;
+  font-size: clamp(0.7rem, 2.2cqw, 0.95rem);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  opacity: 0.85;
+}
+
+.standby-digital__time {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-weight: 300;
+  font-size: clamp(3.25rem, 22cqmin, 8.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.standby-digital__time--timer {
+  font-size: clamp(2.5rem, 16cqmin, 5.5rem);
+}
+
+.standby-digit-slot {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  inline-size: 0.62em;
+  block-size: 0.95em;
+  text-align: center;
+  vertical-align: baseline;
+}
+
+.standby-digit {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  display: block;
+  inline-size: 100%;
+}
+
+.standby-digit--out {
+  animation: digit-out 250ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.standby-digit--in {
+  animation: digit-in 250ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes digit-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-35%);
+  }
+}
+
+@keyframes digit-in {
+  from {
+    opacity: 0;
+    transform: translateY(35%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.standby-colon {
+  display: inline-block;
+  inline-size: 0.28em;
+  text-align: center;
+  font-weight: 200;
+  transition: opacity 1s ease-in-out;
+}
+
+.standby-colon--on {
+  opacity: 1;
+}
+
+.standby-colon--off {
+  opacity: 0.22;
+}
+
+.standby-colon--seconds {
+  opacity: 0.45;
+  font-size: 0.55em;
+}
+
+.standby-seconds {
+  display: inline-flex;
+  font-size: 0.42em;
+  font-weight: 300;
+  opacity: 0.55;
+  letter-spacing: -0.03em;
+  align-self: flex-end;
+  margin-block-end: 0.15em;
+}
+
+.standby-period {
+  margin-inline-start: 0.25em;
+  font-size: 0.22em;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  align-self: flex-end;
+  margin-block-end: 0.55em;
+}
+
+/* Glass Digital digits */
+.standby-digital--glass .standby-digit,
+.standby-digital--glass .standby-colon {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, #ffffff 92%, transparent) 0%,
+    color-mix(in oklab, #ffffff 72%, transparent) 42%,
+    color-mix(in oklab, #ffffff 48%, transparent) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 18px color-mix(in oklab, #ffffff 18%, transparent))
+    drop-shadow(0 2px 8px color-mix(in oklab, #000000 45%, transparent));
+  text-shadow: 0 -1px 0 color-mix(in oklab, #ffffff 22%, transparent);
+}
+
+.standby-digital--glass .standby-seconds .standby-digit {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, #ffffff 70%, transparent),
+    color-mix(in oklab, #ffffff 40%, transparent)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 0 8px color-mix(in oklab, #ffffff 10%, transparent));
+}
+
+/* Solid Bold — far-reading */
+.standby-digital--solid .standby-digit,
+.standby-digital--solid .standby-colon {
+  background: none;
+  color: #fafafa;
+  filter: none;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.45);
+  font-weight: 600;
+}
+
+.standby-digital--solid .standby-seconds .standby-digit {
+  color: #a1a1aa;
+  font-weight: 500;
+}
+
+/* Analog Minimal */
+.standby-analog {
+  inline-size: min(52cqmin, 16rem);
+  aspect-ratio: 1;
+}
+
+.standby-analog__face {
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+.standby-analog__disk {
+  fill: color-mix(in oklab, #ffffff 6%, transparent);
+  stroke: color-mix(in oklab, #ffffff 14%, transparent);
+  stroke-width: 0.8;
+}
+
+.standby-analog__tick {
+  stroke: color-mix(in oklab, #ffffff 28%, transparent);
+  stroke-width: 0.7;
+  stroke-linecap: round;
+}
+
+.standby-analog__hand {
+  stroke-linecap: round;
+  transform-origin: 50px 50px;
+}
+
+.standby-analog__hand--hour {
+  stroke: color-mix(in oklab, #ffffff 82%, transparent);
+  stroke-width: 2.2;
+}
+
+.standby-analog__hand--minute {
+  stroke: color-mix(in oklab, #ffffff 72%, transparent);
+  stroke-width: 1.4;
+}
+
+.standby-analog__hand--second {
+  stroke: var(--accent);
+  stroke-width: 0.7;
+}
+
+.standby-analog__hub {
+  fill: var(--accent);
+}
+
+/* Timer mode */
+.standby-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.standby-timer__ring-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: min(58cqmin, 17rem);
+  aspect-ratio: 1;
+}
+
+.standby-timer__ring {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.standby-timer__track {
+  stroke: color-mix(in oklab, #ffffff 10%, transparent);
+  stroke-width: 1.5;
+}
+
+.standby-timer__progress {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  transition: stroke-dasharray 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.standby-timer__digits {
+  position: relative;
+  z-index: 1;
+}
+
+.standby-timer__controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.standby-timer__btn {
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  padding: 0;
+  border-radius: var(--radius-pill);
+}
+
+/* StandBy Night Mode — warm low-luminance OLED */
+html {
+  transition:
+    background-color 600ms var(--ease-out),
+    color 600ms var(--ease-out);
+}
+
+html[data-night-mode="1"] {
+  --background: #000000;
+  --foreground: #b54a32;
+  --muted: #7a3224;
+  --muted-strong: #5c261c;
+  --accent: #c45a38;
+  --accent-fg: #1a0805;
+  --success: #a85533;
+  --warning: #b45a28;
+  --danger: #c04030;
+  --glass-bg: color-mix(in oklab, #b54a32 8%, transparent);
+  --glass-bg-strong: color-mix(in oklab, #b54a32 12%, transparent);
+  --glass-bg-clear: color-mix(in oklab, #b54a32 5%, transparent);
+  --glass-border: color-mix(in oklab, #b54a32 18%, transparent);
+  --glass-highlight: transparent;
+  --glass-highlight-soft: transparent;
+  --card: color-mix(in oklab, #b54a32 7%, transparent);
+  --card-border: color-mix(in oklab, #b54a32 14%, transparent);
+  --scrim: rgb(0 0 0 / 0.75);
+  --focus-ring: #c45a38;
+  --focus-ring-offset: #000000;
+  --orb-1: transparent;
+  --orb-2: transparent;
+  --orb-3: transparent;
+  color-scheme: dark;
+}
+
+html[data-night-mode="1"] body,
+html[data-night-mode="1"] .ambient {
+  background: #000000;
+  transition: background-color 600ms var(--ease-out), color 600ms var(--ease-out);
+}
+
+html[data-night-mode="1"] .ambient__orb,
+html[data-night-mode="1"] .ambient__grain {
+  opacity: 0;
+  animation: none;
+}
+
+html[data-night-mode="1"] .standby-digital--glass .standby-digit,
+html[data-night-mode="1"] .standby-digital--glass .standby-colon,
+html[data-night-mode="1"] .standby-digital--solid .standby-digit,
+html[data-night-mode="1"] .standby-digital--solid .standby-colon {
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+  color: #b54a32;
+  filter: none;
+  text-shadow: none;
+  font-weight: 400;
+}
+
+html[data-night-mode="1"] .standby-digital--solid .standby-seconds .standby-digit,
+html[data-night-mode="1"] .standby-digital--glass .standby-seconds .standby-digit {
+  color: #7a3224;
+}
+
+html[data-night-mode="1"] .standby-analog__disk {
+  fill: color-mix(in oklab, #b54a32 6%, transparent);
+  stroke: color-mix(in oklab, #b54a32 20%, transparent);
+}
+
+html[data-night-mode="1"] .standby-analog__tick,
+html[data-night-mode="1"] .standby-analog__hand--hour,
+html[data-night-mode="1"] .standby-analog__hand--minute {
+  stroke: #b54a32;
+}
+
+html[data-night-mode="1"] .standby-analog__hand--second,
+html[data-night-mode="1"] .standby-analog__hub {
+  stroke: #c45a38;
+  fill: #c45a38;
+}
+
+html[data-night-mode="1"] .glass-nav,
+html[data-night-mode="1"] .glass-elevated,
+html[data-night-mode="1"] .card,
+html[data-night-mode="1"] .glass {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, #b54a32 22%, transparent);
+}
+
+html[data-night-mode="1"] .skeleton {
+  animation: none;
+}
+
+html[data-night-mode="1"] .ambient__orb,
+html[data-night-mode="1"] .glass-sheen::before,
+html[data-night-mode="1"] .standby-digit--out,
+html[data-night-mode="1"] .standby-digit--in {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .standby-colon {
+    transition: none;
+  }
+
+  .standby-digit--out,
+  .standby-digit--in {
+    animation: none !important;
+  }
+
+  .standby-timer__progress {
+    transition: none;
+  }
+
+  html,
+  html[data-night-mode="1"] body,
+  html[data-night-mode="1"] .ambient {
+    transition: none;
   }
 }

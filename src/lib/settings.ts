@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { strings } from "@/lib/strings";
 
 export const ACCENT_PRESETS = [
   { id: "cyan", label: "Cyan", value: "#22d3ee" },
@@ -10,11 +11,24 @@ export const ACCENT_PRESETS = [
 
 export type AccentId = (typeof ACCENT_PRESETS)[number]["id"];
 
+export const CLOCK_STYLES = [
+  { id: "glass", label: strings.clock.styles.glass },
+  { id: "solid", label: strings.clock.styles.solid },
+  { id: "analog", label: strings.clock.styles.analog },
+] as const;
+
+export type ClockStyleId = (typeof CLOCK_STYLES)[number]["id"];
+
 export const SettingsSchema = z.object({
   version: z.literal(1),
   showSeconds: z.boolean().default(false),
-  persianDigits: z.boolean().default(true),
   nightDim: z.boolean().default(false),
+  nightMode: z.enum(["off", "auto", "on"]).default("off"),
+  nightStartHour: z.number().int().min(0).max(23).default(22),
+  nightEndHour: z.number().int().min(0).max(23).default(6),
+  clockStyle: z.enum(["glass", "solid", "analog"]).default("glass"),
+  hour12: z.enum(["system", "12", "24"]).default("system"),
+  showTimer: z.boolean().default(false),
   accent: z
     .enum(["cyan", "green", "amber", "rose", "blue"])
     .default("cyan"),
@@ -26,8 +40,13 @@ export type Settings = z.infer<typeof SettingsSchema>;
 export const DEFAULT_SETTINGS: Settings = {
   version: 1,
   showSeconds: false,
-  persianDigits: true,
   nightDim: false,
+  nightMode: "off",
+  nightStartHour: 22,
+  nightEndHour: 6,
+  clockStyle: "glass",
+  hour12: "system",
+  showTimer: false,
   accent: "cyan",
   selectedRepos: [],
 };
@@ -39,8 +58,20 @@ export function loadSettings(): Settings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_SETTINGS;
-    const parsed = SettingsSchema.safeParse(JSON.parse(raw));
-    return parsed.success ? parsed.data : DEFAULT_SETTINGS;
+    const json: unknown = JSON.parse(raw);
+    const parsed = SettingsSchema.safeParse(json);
+    if (!parsed.success) return DEFAULT_SETTINGS;
+    const data = parsed.data;
+    if (
+      json &&
+      typeof json === "object" &&
+      "nightDim" in json &&
+      (json as { nightDim?: boolean }).nightDim === true &&
+      !("nightMode" in json)
+    ) {
+      return { ...data, nightMode: "on" };
+    }
+    return data;
   } catch {
     return DEFAULT_SETTINGS;
   }
@@ -53,4 +84,16 @@ export function saveSettings(settings: Settings): void {
 
 export function accentValue(id: AccentId): string {
   return ACCENT_PRESETS.find((p) => p.id === id)?.value ?? "#22d3ee";
+}
+
+export function isInNightWindow(
+  hour: number,
+  startHour: number,
+  endHour: number,
+): boolean {
+  if (startHour === endHour) return false;
+  if (startHour < endHour) {
+    return hour >= startHour && hour < endHour;
+  }
+  return hour >= startHour || hour < endHour;
 }

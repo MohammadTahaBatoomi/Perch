@@ -1,0 +1,108 @@
+/**
+ * Central English UI copy. Keep flat + nested for easy future locales.
+ */
+export const strings = {
+  app: {
+    name: "Perch",
+    description: "Desk-companion dashboard for an old Android phone",
+    shortDescription: "Desk companion for developers",
+  },
+  nav: {
+    home: "Home",
+    activity: "Activity",
+    primary: "Primary",
+  },
+  wake: {
+    active: "Awake",
+    fallback: "Fallback",
+    unavailable: "No wake lock",
+    idle: "Tap to keep awake",
+    unavailableHint:
+      "Wake Lock needs a secure context (HTTPS). Using plain HTTP on LAN often blocks it.",
+  },
+  chrome: {
+    enterFullscreen: "Enter fullscreen",
+    exitFullscreen: "Exit fullscreen",
+    settings: "Settings",
+    closeSettings: "Close settings",
+  },
+  clock: {
+    label: "Clock",
+    styles: {
+      glass: "Glass Digital",
+      solid: "Solid Bold",
+      analog: "Analog Minimal",
+    },
+    showSeconds: "Show seconds",
+    timerMode: "Timer mode",
+    timeFormat: "Time format",
+    system: "System",
+    hour12: "12h",
+    hour24: "24h",
+    clockStyle: "Clock style",
+    pauseTimer: "Pause timer",
+    startTimer: "Start timer",
+    resetTimer: "Reset timer",
+  },
+  night: {
+    label: "Night mode",
+    off: "Off",
+    auto: "Auto",
+    on: "On",
+    start: "Start",
+    end: "End",
+  },
+  settings: {
+    title: "Settings",
+    accent: "Accent",
+    chooseRepos: "Choose GitHub repos…",
+    disconnect: "Disconnect GitHub",
+  },
+  github: {
+    connectHint:
+      "Connect GitHub — Authorize page (needs Client Secret) or quick Device code (works now).",
+    connectAuthorize: "Connect with Authorize",
+    useDeviceCode: "Use device code instead (no secret)",
+    somethingWrong: "Something went wrong",
+    retry: "Retry",
+    openAndApprove: "Open and approve",
+    waiting: "Waiting",
+    chooseRepos: "Choose repos",
+    done: "Done",
+    search: "Search…",
+    searchAria: "Search repositories",
+    loading: "Loading…",
+    noRepos: "No repos selected",
+    chooseReposCta: "Choose repos",
+    repos: "Repos",
+    noCommits: "No recent commits",
+    private: "private",
+    public: "public",
+    noCi: "no CI",
+    qrAria: "QR code for GitHub device login",
+    accessDenied: "Access denied",
+    codeExpired: "Code expired",
+    networkError: "Network error",
+  },
+  activity: {
+    title: "Activity",
+    recent: "Recent",
+    connectFirst: "Connect GitHub first to see activity.",
+    couldNotLoad: "Could not load activity",
+    goHome: "Go to Home",
+    noData: "No activity data yet.",
+    heatmapAria: "12-week activity heatmap",
+    less: "Less",
+    more: "More",
+    noEvents: "No recent GitHub events in the feed yet.",
+  },
+  pomodoro: {
+    focus: "Focus",
+    break: "Break",
+    pause: "Pause pomodoro",
+    start: "Start pomodoro",
+    reset: "Reset pomodoro",
+  },
+} as const;
+
+export type Strings = typeof strings;

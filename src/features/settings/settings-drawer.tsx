@@ -2,7 +2,8 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { Settings, X } from "lucide-react";
-import { ACCENT_PRESETS } from "@/lib/settings";
+import { ACCENT_PRESETS, CLOCK_STYLES } from "@/lib/settings";
+import { strings } from "@/lib/strings";
 import { useSettings } from "./settings-provider";
 
 export function SettingsDrawer({
@@ -46,7 +47,7 @@ export function SettingsDrawer({
         type="button"
         onClick={() => setOpen(true)}
         className="btn-icon"
-        aria-label="Settings"
+        aria-label={strings.chrome.settings}
         aria-expanded={open}
         aria-haspopup="dialog"
       >
@@ -68,15 +69,18 @@ export function SettingsDrawer({
             aria-labelledby={titleId}
           >
             <header className="flex items-center justify-between border-b border-[color-mix(in_oklab,#ffffff_8%,transparent)] px-4 py-3">
-              <h2 id={titleId} className="text-sm font-semibold tracking-tight text-foreground">
-                Settings
+              <h2
+                id={titleId}
+                className="text-sm font-semibold tracking-tight text-foreground"
+              >
+                {strings.settings.title}
               </h2>
               <button
                 ref={closeRef}
                 type="button"
                 onClick={() => setOpen(false)}
                 className="btn-icon"
-                aria-label="Close settings"
+                aria-label={strings.chrome.closeSettings}
               >
                 <X size={16} strokeWidth={2} />
               </button>
@@ -84,24 +88,125 @@ export function SettingsDrawer({
 
             <div className="flex-1 space-y-5 overflow-auto p-4 text-sm">
               <Toggle
-                label="Show seconds"
+                label={strings.clock.showSeconds}
                 checked={settings.showSeconds}
                 onChange={(v) => update({ showSeconds: v })}
               />
               <Toggle
-                label="Persian digits"
-                checked={settings.persianDigits}
-                onChange={(v) => update({ persianDigits: v })}
+                label={strings.clock.timerMode}
+                checked={settings.showTimer}
+                onChange={(v) => update({ showTimer: v })}
               />
-              <Toggle
-                label="Night dim"
-                checked={settings.nightDim}
-                onChange={(v) => update({ nightDim: v })}
-              />
+
+              <fieldset className="space-y-2 border-0 p-0">
+                <legend className="mb-2 text-[10px] font-medium uppercase tracking-[0.14em] text-muted">
+                  {strings.clock.clockStyle}
+                </legend>
+                <div className="flex flex-col gap-1.5">
+                  {CLOCK_STYLES.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => update({ clockStyle: s.id })}
+                      className={`list-row ${settings.clockStyle === s.id ? "" : ""}`}
+                      data-active={settings.clockStyle === s.id}
+                      aria-pressed={settings.clockStyle === s.id}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset className="space-y-2 border-0 p-0">
+                <legend className="mb-2 text-[10px] font-medium uppercase tracking-[0.14em] text-muted">
+                  {strings.clock.timeFormat}
+                </legend>
+                <div className="nav-pill w-full justify-between">
+                  {(
+                    [
+                      ["system", strings.clock.system],
+                      ["12", strings.clock.hour12],
+                      ["24", strings.clock.hour24],
+                    ] as const
+                  ).map(([id, label]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      className="nav-pill__item flex-1 border-0 bg-transparent"
+                      data-active={settings.hour12 === id}
+                      aria-pressed={settings.hour12 === id}
+                      onClick={() => update({ hour12: id })}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset className="space-y-2 border-0 p-0">
+                <legend className="mb-2 text-[10px] font-medium uppercase tracking-[0.14em] text-muted">
+                  {strings.night.label}
+                </legend>
+                <div className="nav-pill w-full justify-between">
+                  {(
+                    [
+                      ["off", strings.night.off],
+                      ["auto", strings.night.auto],
+                      ["on", strings.night.on],
+                    ] as const
+                  ).map(([id, label]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      className="nav-pill__item flex-1 border-0 bg-transparent"
+                      data-active={settings.nightMode === id}
+                      aria-pressed={settings.nightMode === id}
+                      onClick={() => update({ nightMode: id })}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {settings.nightMode === "auto" && (
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <label className="text-xs text-muted">
+                      {strings.night.start}
+                      <input
+                        type="number"
+                        min={0}
+                        max={23}
+                        value={settings.nightStartHour}
+                        onChange={(e) =>
+                          update({
+                            nightStartHour: clampHour(Number(e.target.value)),
+                          })
+                        }
+                        className="field mt-1"
+                      />
+                    </label>
+                    <label className="text-xs text-muted">
+                      {strings.night.end}
+                      <input
+                        type="number"
+                        min={0}
+                        max={23}
+                        value={settings.nightEndHour}
+                        onChange={(e) =>
+                          update({
+                            nightEndHour: clampHour(Number(e.target.value)),
+                          })
+                        }
+                        className="field mt-1"
+                      />
+                    </label>
+                  </div>
+                )}
+              </fieldset>
 
               <div>
                 <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.14em] text-muted">
-                  Accent
+                  {strings.settings.accent}
                 </p>
                 <div className="flex gap-2">
                   {ACCENT_PRESETS.map((p) => (
@@ -131,7 +236,7 @@ export function SettingsDrawer({
                   onChooseRepos();
                 }}
               >
-                Choose GitHub repos…
+                {strings.settings.chooseRepos}
               </button>
 
               <button
@@ -140,7 +245,7 @@ export function SettingsDrawer({
                 onClick={() => void disconnect()}
                 className="btn btn-danger w-full justify-start rounded-md"
               >
-                Disconnect GitHub
+                {strings.settings.disconnect}
               </button>
             </div>
           </aside>
@@ -148,6 +253,11 @@ export function SettingsDrawer({
       )}
     </>
   );
+}
+
+function clampHour(n: number): number {
+  if (Number.isNaN(n)) return 0;
+  return Math.min(23, Math.max(0, Math.round(n)));
 }
 
 function Toggle({

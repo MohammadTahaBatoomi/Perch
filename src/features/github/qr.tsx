@@ -2,6 +2,7 @@
 
 import { encode } from "uqr";
 import type { ReactElement } from "react";
+import { strings } from "@/lib/strings";
 
 /**
  * QR always renders on a solid high-contrast host (.qr-surface).
@@ -27,7 +28,7 @@ export function QrSvg({ value, size = 96 }: { value: string; size?: number }) {
         height={size}
         viewBox={`0 0 ${n} ${n}`}
         className="block"
-        aria-label="QR code for GitHub device login"
+        aria-label={strings.github.qrAria}
       >
         {cells}
       </svg>

@@ -3,8 +3,8 @@
 Desk-companion dashboard for an old Android phone.
 
 Perch runs as a Next.js web app on your machine. Mount an old phone in landscape
-next to your monitor and open the app in a browser/WebView — clock, Jalali date,
-and GitHub status/commits.
+next to your monitor and open the app in a browser/WebView — StandBy-style clock,
+GitHub status/commits, and activity.
 
 > Screenshots: _coming soon_ (MVP look & feel evaluation)
 
@@ -13,10 +13,7 @@ and GitHub status/commits.
 - Next.js App Router
 - Tailwind CSS v4, TypeScript strict
 - GitHub OAuth (Authorize + Device Flow fallback)
-- Fonts via `next/font/local` (Geist + Vazirmatn slots in `src/fonts/`)
-
-> If `src/fonts/Vazirmatn-*.ttf` are placeholders, replace them with
-> [official Vazirmatn](https://github.com/rastikerdar/vazirmatn) files for best Persian glyphs.
+- Fonts via `next/font/local` (Geist + Geist Mono in `src/fonts/`)
 
 ## Setup
 

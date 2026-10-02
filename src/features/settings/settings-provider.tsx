@@ -15,10 +15,12 @@ import {
   saveSettings,
   type Settings,
 } from "@/lib/settings";
+import { useNightModeActive } from "@/features/clock/use-night-mode";
 
 type SettingsContextValue = {
   settings: Settings;
   ready: boolean;
+  nightModeActive: boolean;
   update: (patch: Partial<Settings>) => void;
   setSettings: (next: Settings) => void;
 };
@@ -28,9 +30,9 @@ const SettingsContext = createContext<SettingsContextValue | null>(null);
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettingsState] = useState<Settings>(DEFAULT_SETTINGS);
   const [ready, setReady] = useState(false);
+  const nightModeActive = useNightModeActive(settings);
 
   useEffect(() => {
-    // Defer hydration from localStorage to avoid sync setState-in-effect lint.
     const t = window.setTimeout(() => {
       setSettingsState(loadSettings());
       setReady(true);
@@ -45,8 +47,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       "--accent",
       accentValue(settings.accent),
     );
-    document.documentElement.dataset.night = settings.nightDim ? "1" : "0";
   }, [settings, ready]);
+
+  useEffect(() => {
+    document.documentElement.dataset.nightMode = nightModeActive ? "1" : "0";
+    // Keep legacy attr in sync for any leftover CSS
+    document.documentElement.dataset.night = nightModeActive ? "1" : "0";
+  }, [nightModeActive]);
 
   const update = useCallback((patch: Partial<Settings>) => {
     setSettingsState((prev) => ({ ...prev, ...patch }));
@@ -57,7 +64,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <SettingsContext.Provider value={{ settings, ready, update, setSettings }}>
+    <SettingsContext.Provider
+      value={{ settings, ready, nightModeActive, update, setSettings }}
+    >
       {children}
     </SettingsContext.Provider>
   );

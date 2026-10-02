@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Github, Loader2, RefreshCw } from "lucide-react";
 import { relativeTime } from "@/lib/format";
+import { strings } from "@/lib/strings";
 import { useSettings } from "@/features/settings/settings-provider";
 import { QrSvg } from "./qr";
 
@@ -133,7 +134,9 @@ function ConnectFlow({ onConnected }: { onConnected: () => void }) {
           setPhase("error");
           setMode("error");
           setMessage(
-            data.status === "denied" ? "Access denied" : "Code expired",
+            data.status === "denied"
+              ? strings.github.accessDenied
+              : strings.github.codeExpired,
           );
           return;
         }
@@ -146,7 +149,7 @@ function ConnectFlow({ onConnected }: { onConnected: () => void }) {
       } catch {
         setPhase("error");
         setMode("error");
-        setMessage("Network error");
+        setMessage(strings.github.networkError);
         return;
       }
       timer = setTimeout(poll, intervalRef.current * 1000);
@@ -164,18 +167,17 @@ function ConnectFlow({ onConnected }: { onConnected: () => void }) {
       <div className="flex h-full flex-col items-center justify-center gap-3 p-4">
         <Github className="text-muted" size={28} strokeWidth={1.75} />
         <p className="text-center text-sm text-muted">
-          Connect GitHub — Authorize page (needs Client Secret) or quick Device
-          code (works now).
+          {strings.github.connectHint}
         </p>
         <a href="/api/github/oauth/start" className="btn-accent">
-          Connect with Authorize
+          {strings.github.connectAuthorize}
         </a>
         <button
           type="button"
           className="btn-ghost text-xs underline"
           onClick={() => void startDevice()}
         >
-          Use device code instead (no secret)
+          {strings.github.useDeviceCode}
         </button>
       </div>
     );
@@ -184,7 +186,9 @@ function ConnectFlow({ onConnected }: { onConnected: () => void }) {
   if (mode === "error" || phase === "error") {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-4">
-        <p className="text-sm text-danger">{message ?? "Something went wrong"}</p>
+        <p className="text-sm text-danger">
+          {message ?? strings.github.somethingWrong}
+        </p>
         <button
           type="button"
           className="btn-accent"
@@ -194,7 +198,7 @@ function ConnectFlow({ onConnected }: { onConnected: () => void }) {
           }}
         >
           <RefreshCw size={14} className="me-1 inline" strokeWidth={2} />
-          Retry
+          {strings.github.retry}
         </button>
       </div>
     );
@@ -206,7 +210,7 @@ function ConnectFlow({ onConnected }: { onConnected: () => void }) {
         {flow && <QrSvg value={flow.verification_uri} size={88} />}
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted">
-            Open and approve
+            {strings.github.openAndApprove}
           </p>
           <a
             href={flow?.verification_uri ?? "https://github.com/login/device"}
@@ -226,7 +230,7 @@ function ConnectFlow({ onConnected }: { onConnected: () => void }) {
               style={{ color: "var(--accent)" }}
               strokeWidth={2}
             />
-            Waiting · {Math.floor(remaining / 60)}:
+            {strings.github.waiting} · {Math.floor(remaining / 60)}:
             {String(remaining % 60).padStart(2, "0")}
           </div>
         </div>
@@ -295,22 +299,24 @@ export function RepoSelectSheet({
       >
         <div className="flex items-center justify-between border-b border-[color-mix(in_oklab,#ffffff_8%,transparent)] px-3 py-2.5">
           <h2 id={titleId} className="text-sm font-semibold tracking-tight text-foreground">
-            Choose repos
+            {strings.github.chooseRepos}
           </h2>
           <button type="button" className="btn-ghost px-2 py-1 text-xs" onClick={onClose}>
-            Done
+            {strings.github.done}
           </button>
         </div>
         <input
           ref={inputRef}
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search…"
+          placeholder={strings.github.search}
           className="field m-2 w-[calc(100%-1rem)]"
-          aria-label="Search repositories"
+          aria-label={strings.github.searchAria}
         />
         <div className="min-h-0 flex-1 overflow-auto px-2 pb-2">
-          {isLoading && <p className="p-2 text-sm text-muted">Loading…</p>}
+          {isLoading && (
+            <p className="p-2 text-sm text-muted">{strings.github.loading}</p>
+          )}
           {error && (
             <p className="p-2 text-sm text-danger">{(error as Error).message}</p>
           )}
@@ -326,7 +332,8 @@ export function RepoSelectSheet({
               >
                 <span className="truncate">{r.full_name}</span>
                 <span className="ms-2 shrink-0 text-[10px] text-muted">
-                  {r.private ? "private" : "public"} · ★{r.stars}
+                  {r.private ? strings.github.private : strings.github.public} ·
+                  ★{r.stars}
                 </span>
               </button>
             );
@@ -423,15 +430,15 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
           onClick={onOpenRepos}
           className="btn-ghost ms-auto px-2 py-1 text-[11px]"
         >
-          Repos ({settings.selectedRepos.length})
+          {strings.github.repos} ({settings.selectedRepos.length})
         </button>
       </header>
 
       {settings.selectedRepos.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-2 p-4">
-          <p className="text-sm text-muted">No repos selected</p>
+          <p className="text-sm text-muted">{strings.github.noRepos}</p>
           <button type="button" className="btn-accent" onClick={onOpenRepos}>
-            Choose repos
+            {strings.github.chooseReposCta}
           </button>
         </div>
       ) : (
@@ -450,7 +457,7 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
                   style={{
                     background: ciColor(r.ci_status, r.ci_conclusion),
                   }}
-                  title={r.ci_conclusion ?? r.ci_status ?? "no CI"}
+                  title={r.ci_conclusion ?? r.ci_status ?? strings.github.noCi}
                 />
                 <span className="min-w-0 flex-1 truncate font-medium text-foreground/90">
                   {r.full_name.split("/")[1]}
@@ -468,7 +475,7 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
               <div className="skeleton m-1 h-12" />
             )}
             {!commitsLoading && commitsData?.commits.length === 0 && (
-              <p className="p-2 text-xs text-muted">No recent commits</p>
+              <p className="p-2 text-xs text-muted">{strings.github.noCommits}</p>
             )}
             {commitsData?.commits.map((c) => {
               const isNew = seen.size > 0 && !seen.has(c.sha);

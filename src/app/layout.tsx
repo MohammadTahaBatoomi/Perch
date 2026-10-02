@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { SettingsProvider } from "@/features/settings/settings-provider";
+import { strings } from "@/lib/strings";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -17,36 +18,14 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-/**
- * Vazirmatn slot for Persian glyphs.
- * Drop official Vazirmatn files into src/fonts/ (see README). Until then a
- * compatible Arabic TTF is used so builds work offline.
- */
-const vazirmatn = localFont({
-  src: [
-    {
-      path: "../fonts/Vazirmatn-Regular.ttf",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../fonts/Vazirmatn-Bold.ttf",
-      weight: "700",
-      style: "normal",
-    },
-  ],
-  variable: "--font-vazir",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
-  title: "Perch",
-  description: "Desk-companion dashboard for an old Android phone",
-  applicationName: "Perch",
+  title: strings.app.name,
+  description: strings.app.description,
+  applicationName: strings.app.name,
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Perch",
+    title: strings.app.name,
   },
   manifest: "/manifest.webmanifest",
 };
@@ -64,7 +43,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${vazirmatn.variable} h-full antialiased`}
+      dir="ltr"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="h-full overflow-hidden bg-background text-foreground">
         <SettingsProvider>{children}</SettingsProvider>

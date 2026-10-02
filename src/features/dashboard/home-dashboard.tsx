@@ -7,11 +7,11 @@ import { GitHubCard } from "@/features/github/github-card";
 function HomeBody() {
   const { openRepos } = useShell();
   return (
-    <div className="home-grid h-full gap-2">
-      <div className="min-h-0">
+    <div className="home-standby">
+      <div className="home-standby__hero min-h-0">
         <ClockCard />
       </div>
-      <div className="min-h-0">
+      <div className="home-standby__periphery min-h-0">
         <GitHubCard onOpenRepos={openRepos} />
       </div>
     </div>
