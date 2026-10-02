@@ -41,7 +41,7 @@ GITHUB_CLIENT_SECRET=...   # needed for Authorize button
 GITHUB_REDIRECT_URI=http://localhost:3000/api/github/oauth/callback
 SESSION_SECRET=<openssl rand -base64 32>
 # optional:
-GITHUB_OAUTH_SCOPES=read:user public_repo
+GITHUB_OAUTH_SCOPES=read:user repo
 ```
 
 Private repos need the `repo` scope — a broader grant. Prefer public-only for MVP.

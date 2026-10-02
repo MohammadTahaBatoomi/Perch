@@ -13,17 +13,6 @@ const ReposSchema = z
   )
   .pipe(z.array(z.string().regex(/^[\w.-]+\/[\w.-]+$/)).max(20));
 
-function limitationFor(source: "calendar" | "commits" | "events"): string {
-  switch (source) {
-    case "calendar":
-      return "From your GitHub contribution calendar (last 12 weeks).";
-    case "commits":
-      return "From commits on the selected repositories (last 12 weeks).";
-    case "events":
-      return "From your public events feed (recent activity only).";
-  }
-}
-
 export async function GET(request: Request) {
   const token = await getGitHubToken();
   if (!token) {
@@ -43,12 +32,17 @@ export async function GET(request: Request) {
   }
 
   try {
-    const { days, recent, source } = await getActivityHeatmap(token, repos);
+    const { days, recent, source, totalContributions } =
+      await getActivityHeatmap(token, repos);
     return NextResponse.json({
       days,
       recent,
+      totalContributions,
       source,
-      limitation: limitationFor(source),
+      limitation:
+        source === "calendar"
+          ? "GitHub contribution calendar (last year)."
+          : "Approximate activity for the last year.",
     });
   } catch (err) {
     if (err instanceof GitHubApiError && err.status === 401) {

@@ -45,14 +45,16 @@ export function DigitalClock({
           className={`standby-colon ${pulse ? "standby-colon--on" : "standby-colon--off"}`}
           aria-hidden
         >
-          :
+          <span className="standby-colon__dot" />
+          <span className="standby-colon__dot" />
         </span>
         <FlipDigit value={m[0]!} />
         <FlipDigit value={m[1]!} />
         {showSeconds && (
           <>
             <span className="standby-colon standby-colon--seconds" aria-hidden>
-              :
+              <span className="standby-colon__dot" />
+              <span className="standby-colon__dot" />
             </span>
             <span className="standby-seconds">
               <FlipDigit value={s[0]!} />

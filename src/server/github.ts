@@ -83,7 +83,8 @@ function getClientSecret(): string {
 }
 
 export function getOAuthScopes(): string {
-  return process.env.GITHUB_OAUTH_SCOPES ?? "read:user public_repo";
+  // `repo` so private contributions / commits can appear when enabled on the profile
+  return process.env.GITHUB_OAUTH_SCOPES ?? "read:user repo";
 }
 
 /** Build GitHub authorize URL for the classic “Authorize” page flow. */
@@ -417,6 +418,7 @@ export type ActivityHeatmapResult = {
   days: { date: string; count: number }[];
   recent: ActivityItem[];
   source: "calendar" | "commits" | "events";
+  totalContributions: number;
 };
 
 async function listUserEvents(
@@ -440,9 +442,9 @@ function emptyHeatmapWindow(): {
   start: Date;
   today: Date;
 } {
-  const weeks = 12;
+  // Match GitHub profile graph (~1 year / 53 weeks)
+  const weeks = 53;
   const today = new Date();
-  // Align buckets to UTC calendar dates (matches GitHub contribution calendar)
   const todayUtc = new Date(
     Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
   );
@@ -461,14 +463,14 @@ type CalendarDay = { date: string; contributionCount: number };
 
 async function fetchContributionCalendar(
   token: string,
-  from: Date,
-  to: Date,
 ): Promise<ActivityHeatmapResult> {
+  // Omit from/to so GitHub returns the exact same rolling year as the profile graph
   const query = `
-    query($from: DateTime!, $to: DateTime!) {
+    query {
       viewer {
-        contributionsCollection(from: $from, to: $to) {
+        contributionsCollection {
           contributionCalendar {
+            totalContributions
             weeks {
               contributionDays {
                 date
@@ -476,9 +478,9 @@ async function fetchContributionCalendar(
               }
             }
           }
-          commitContributionsByRepository(maxRepositories: 15) {
+          commitContributionsByRepository(maxRepositories: 20) {
             repository { nameWithOwner }
-            contributions(first: 8, orderBy: { field: OCCURRED_AT, direction: DESC }) {
+            contributions(first: 12, orderBy: { field: OCCURRED_AT, direction: DESC }) {
               nodes {
                 occurredAt
                 commitCount
@@ -499,13 +501,7 @@ async function fetchContributionCalendar(
       "User-Agent": "Perch-Desk-Companion",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      query,
-      variables: {
-        from: from.toISOString(),
-        to: new Date(to.getTime() + 24 * 60 * 60 * 1000 - 1).toISOString(),
-      },
-    }),
+    body: JSON.stringify({ query }),
     cache: "no-store",
   });
 
@@ -517,6 +513,7 @@ async function fetchContributionCalendar(
       viewer?: {
         contributionsCollection?: {
           contributionCalendar?: {
+            totalContributions?: number;
             weeks?: { contributionDays: CalendarDay[] }[];
           };
           commitContributionsByRepository?: {
@@ -540,7 +537,8 @@ async function fetchContributionCalendar(
   }
 
   const collection = json.data?.viewer?.contributionsCollection;
-  const weeks = collection?.contributionCalendar?.weeks ?? [];
+  const calendar = collection?.contributionCalendar;
+  const weeks = calendar?.weeks ?? [];
   const days: { date: string; count: number }[] = [];
   for (const week of weeks) {
     for (const day of week.contributionDays) {
@@ -563,10 +561,14 @@ async function fetchContributionCalendar(
   }
   recent.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 
+  const totalContributions =
+    calendar?.totalContributions ?? sumCounts(days);
+
   return {
     days,
-    recent: recent.slice(0, 30),
+    recent: recent.slice(0, 40),
     source: "calendar",
+    totalContributions,
   };
 }
 
@@ -618,10 +620,12 @@ async function heatmapFromRepoCommits(
   }
 
   recent.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+  const days = [...counts.entries()].map(([date, count]) => ({ date, count }));
   return {
-    days: [...counts.entries()].map(([date, count]) => ({ date, count })),
+    days,
     recent: recent.slice(0, 30),
     source: "commits",
+    totalContributions: sumCounts(days),
   };
 }
 
@@ -630,7 +634,7 @@ function sumCounts(days: { count: number }[]): number {
 }
 
 /**
- * 12-week activity. Prefers GitHub contribution calendar (GraphQL),
+ * Full-year activity (GitHub contribution graph). Prefers GraphQL calendar,
  * then selected-repo commits, then events feed.
  */
 export async function getActivityHeatmap(
@@ -642,36 +646,8 @@ export async function getActivityHeatmap(
 
   // Official contribution calendar (matches profile graph)
   try {
-    const calendar = await fetchContributionCalendar(token, start, today);
+    const calendar = await fetchContributionCalendar(token);
     if (calendar.days.length > 0 && sumCounts(calendar.days) > 0) {
-      if (repoFilter.length > 0) {
-        const filter = new Set(repoFilter.map((r) => r.toLowerCase()));
-        const recent = calendar.recent.filter((r) =>
-          filter.has(r.repo.toLowerCase()),
-        );
-        // Prefer commit-level recent for selected repos when available
-        if (recent.length === 0) {
-          try {
-            const fromCommits = await heatmapFromRepoCommits(
-              token,
-              repoFilter,
-              me.login,
-              start,
-              today,
-            );
-            if (fromCommits.recent.length > 0) {
-              return {
-                days: calendar.days,
-                recent: fromCommits.recent,
-                source: "calendar",
-              };
-            }
-          } catch {
-            /* keep calendar recent */
-          }
-        }
-        return { ...calendar, recent };
-      }
       return calendar;
     }
   } catch {
@@ -688,7 +664,7 @@ export async function getActivityHeatmap(
         start,
         today,
       );
-      if (sumCounts(fromCommits.days) > 0 || fromCommits.recent.length > 0) {
+      if (sumCounts(fromCommits.days) > 0) {
         return fromCommits;
       }
     } catch {
@@ -710,7 +686,6 @@ export async function getActivityHeatmap(
 
   const counts = new Map<string, number>();
   for (const d of emptyDays) counts.set(d.date, 0);
-  const recent: ActivityItem[] = [];
 
   for (const ev of events) {
     const created = new Date(ev.created_at);
@@ -724,29 +699,6 @@ export async function getActivityHeatmap(
     if (ev.type === "PushEvent") {
       const n = ev.payload.commits?.length ?? ev.payload.size ?? 1;
       if (counts.has(day)) counts.set(day, (counts.get(day) ?? 0) + n);
-      const commits = ev.payload.commits ?? [];
-      for (const c of commits.slice(0, 3)) {
-        recent.push({
-          id: `${ev.created_at}-${c.sha}`,
-          date: ev.created_at,
-          repo,
-          message: c.message.split("\n")[0] ?? "push",
-          html_url: c.url
-            ? c.url
-                .replace("api.github.com/repos", "github.com")
-                .replace("/commits/", "/commit/")
-            : `https://github.com/${repo}`,
-        });
-      }
-      if (commits.length === 0) {
-        recent.push({
-          id: `${ev.created_at}-${repo}-push`,
-          date: ev.created_at,
-          repo,
-          message: `Pushed ${n} commit${n === 1 ? "" : "s"}`,
-          html_url: `https://github.com/${repo}`,
-        });
-      }
     } else if (
       ev.type === "PullRequestEvent" ||
       ev.type === "IssuesEvent" ||
@@ -754,21 +706,18 @@ export async function getActivityHeatmap(
       ev.type === "ReleaseEvent"
     ) {
       if (counts.has(day)) counts.set(day, (counts.get(day) ?? 0) + 1);
-      recent.push({
-        id: `${ev.created_at}-${ev.type}-${repo}`,
-        date: ev.created_at,
-        repo,
-        message: ev.type.replace(/Event$/, ""),
-        html_url: `https://github.com/${repo}`,
-      });
     }
   }
 
-  recent.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+  const eventDays = [...counts.entries()].map(([date, count]) => ({
+    date,
+    count,
+  }));
   const fromEvents: ActivityHeatmapResult = {
-    days: [...counts.entries()].map(([date, count]) => ({ date, count })),
-    recent: recent.slice(0, 30),
+    days: eventDays,
+    recent: [],
     source: "events",
+    totalContributions: sumCounts(eventDays),
   };
 
   if (sumCounts(fromEvents.days) > 0) return fromEvents;
@@ -780,7 +729,12 @@ export async function getActivityHeatmap(
     repos = all.slice(0, 12).map((r) => r.full_name);
   }
   if (repos.length === 0) {
-    return { days: emptyDays, recent: [], source: "events" };
+    return {
+      days: emptyDays,
+      recent: [],
+      source: "events",
+      totalContributions: 0,
+    };
   }
   return heatmapFromRepoCommits(token, repos, me.login, start, today);
 }

@@ -32,8 +32,9 @@ Every Route Handler validates query/body with **zod** before use.
 
 ### Scopes
 
-Default: `read:user public_repo`. Requesting `repo` for private repositories is
-a deliberate trade-off.
+Default: `read:user repo` so private contributions can match your GitHub profile
+when enabled. Narrower scopes like `read:user public_repo` still work for public
+activity only.
 
 ### Disconnect
 

@@ -4,9 +4,9 @@ import useSWR from "swr";
 import Link from "next/link";
 import { relativeTime } from "@/lib/format";
 import { strings } from "@/lib/strings";
-import { useSettings } from "@/features/settings/settings-provider";
 
 type Day = { date: string; count: number };
+
 type RecentItem = {
   id: string;
   date: string;
@@ -18,7 +18,7 @@ type RecentItem = {
 type ActivityResponse = {
   days: Day[];
   recent: RecentItem[];
-  source?: string;
+  totalContributions?: number;
   limitation: string;
 };
 
@@ -36,36 +36,82 @@ async function fetcher(url: string): Promise<ActivityResponse> {
   return res.json() as Promise<ActivityResponse>;
 }
 
-function level(count: number): string {
-  if (count === 0) return "color-mix(in oklab, #ffffff 10%, transparent)";
-  if (count === 1) return "color-mix(in oklab, var(--accent) 35%, #18181b)";
-  if (count === 2) return "color-mix(in oklab, var(--accent) 55%, #18181b)";
-  if (count <= 4) return "color-mix(in oklab, var(--accent) 75%, #18181b)";
-  return "var(--accent)";
-}
-
-export function ActivityView() {
-  const { settings } = useSettings();
-  const reposQ =
-    settings.selectedRepos.length > 0
-      ? `?repos=${encodeURIComponent(settings.selectedRepos.join(","))}`
-      : "";
-  const key = `/api/github/activity${reposQ}`;
-
-  const { data, error, isLoading } = useSWR(key, fetcher, {
+function useActivity() {
+  return useSWR("/api/github/activity", fetcher, {
     revalidateOnFocus: false,
     refreshInterval: 5 * 60 * 1000,
   });
+}
 
+function levelIndex(count: number): number {
+  if (count <= 0) return 0;
+  if (count === 1) return 1;
+  if (count <= 3) return 2;
+  if (count <= 6) return 3;
+  return 4;
+}
+
+function levelColor(count: number): string {
+  return `var(--contrib-${levelIndex(count)})`;
+}
+
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
+
+const DAY_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""] as const;
+
+const CELL = 10;
+const GAP = 3;
+const DAY_LABEL_W = 28;
+const MONTH_LABEL_H = 16;
+
+function monthLabels(weeks: Day[][]): { label: string; x: number }[] {
+  const out: { label: string; x: number }[] = [];
+  let lastMonth = -1;
+  let lastX = -Infinity;
+  const minGap = CELL * 2.4;
+  weeks.forEach((week, wi) => {
+    const first = week[0];
+    if (!first || first.count < 0) return;
+    const month = Number(first.date.slice(5, 7)) - 1;
+    if (month === lastMonth) return;
+    const x = DAY_LABEL_W + wi * (CELL + GAP);
+    if (x - lastX < minGap) return;
+    lastMonth = month;
+    lastX = x;
+    out.push({ label: MONTHS[month] ?? "", x });
+  });
+  return out;
+}
+
+function ActivityStatus({
+  error,
+  isLoading,
+  empty,
+}: {
+  error?: Error;
+  isLoading: boolean;
+  empty?: boolean;
+}) {
   if (isLoading) {
     return <div className="card skeleton h-full w-full" />;
   }
 
   if (error) {
     const unauthorized =
-      error instanceof Error &&
-      "status" in error &&
-      (error as Error & { status?: number }).status === 401;
+      "status" in error && (error as Error & { status?: number }).status === 401;
     return (
       <div className="card flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
         <p className="text-sm text-muted">
@@ -82,7 +128,7 @@ export function ActivityView() {
     );
   }
 
-  if (!data) {
+  if (empty) {
     return (
       <div className="card flex h-full items-center justify-center p-6 text-sm text-muted">
         {strings.activity.noData}
@@ -90,106 +136,167 @@ export function ActivityView() {
     );
   }
 
-  const cell = 14;
-  const gap = 4;
+  return null;
+}
+
+export function ActivityHeatmap() {
+  const { data, error, isLoading } = useActivity();
+  const status = (
+    <ActivityStatus
+      error={error}
+      isLoading={isLoading}
+      empty={!data}
+    />
+  );
+  if (isLoading || error || !data) return status;
+
   const weeks: Day[][] = [];
   for (let i = 0; i < data.days.length; i += 7) {
-    weeks.push(data.days.slice(i, i + 7));
+    const slice = data.days.slice(i, i + 7);
+    while (slice.length < 7) {
+      slice.push({ date: `pad-${slice.length}`, count: -1 });
+    }
+    weeks.push(slice);
   }
-  const width = Math.max(weeks.length * (cell + gap) - gap, cell);
-  const height = 7 * (cell + gap) - gap;
-  const total = data.days.reduce((n, d) => n + d.count, 0);
+
+  const gridW = weeks.length * (CELL + GAP) - GAP;
+  const gridH = 7 * (CELL + GAP) - GAP;
+  const width = DAY_LABEL_W + gridW;
+  const height = MONTH_LABEL_H + gridH;
+  const total =
+    data.totalContributions ??
+    data.days.reduce((n, d) => n + d.count, 0);
+  const months = monthLabels(weeks);
 
   return (
-    <div className="activity-stack h-full">
-      <section className="card flex min-h-0 flex-col gap-2.5 overflow-hidden p-3.5 sm:p-4">
-        <div className="flex shrink-0 items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
-              {strings.activity.title}
-            </h1>
-            <p className="mt-0.5 text-[11px] leading-snug text-muted sm:text-xs">
-              {data.limitation}
-            </p>
-          </div>
-          <p className="shrink-0 font-mono text-xs text-muted sm:text-sm">
-            {total} · 12w
-          </p>
-        </div>
-        <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden">
-          <svg
-            viewBox={`0 0 ${width} ${height}`}
-            className="activity-heatmap"
-            preserveAspectRatio="xMinYMid meet"
-            role="img"
-            aria-label={strings.activity.heatmapAria}
-          >
-            {weeks.map((week, wi) =>
-              week.map((day, di) => (
+    <section className="activity-panel card flex h-full min-h-0 flex-col overflow-hidden p-2.5 sm:p-3 md:p-5 lg:p-6">
+      <header className="activity-panel__header shrink-0">
+        <h1 className="activity-panel__title">
+          {total.toLocaleString("en-US")} contributions in the last year
+        </h1>
+      </header>
+
+      <div className="activity-panel__graph">
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          className="activity-heatmap"
+          preserveAspectRatio="xMidYMid meet"
+          role="img"
+          aria-label={strings.activity.heatmapAria}
+        >
+          {months.map((m) => (
+            <text
+              key={`${m.label}-${m.x}`}
+              x={m.x}
+              y={11}
+              className="activity-heatmap__label"
+            >
+              {m.label}
+            </text>
+          ))}
+
+          {DAY_LABELS.map((label, di) =>
+            label ? (
+              <text
+                key={`day-${di}`}
+                x={0}
+                y={MONTH_LABEL_H + di * (CELL + GAP) + CELL - 1}
+                className="activity-heatmap__label"
+              >
+                {label}
+              </text>
+            ) : null,
+          )}
+
+          {weeks.map((week, wi) =>
+            week.map((day, di) => {
+              if (day.count < 0) return null;
+              return (
                 <rect
                   key={day.date}
-                  x={wi * (cell + gap)}
-                  y={di * (cell + gap)}
-                  width={cell}
-                  height={cell}
-                  rx={3}
-                  fill={level(day.count)}
-                  stroke="color-mix(in oklab, #ffffff 14%, transparent)"
-                  strokeWidth={0.5}
+                  x={DAY_LABEL_W + wi * (CELL + GAP)}
+                  y={MONTH_LABEL_H + di * (CELL + GAP)}
+                  width={CELL}
+                  height={CELL}
+                  rx={2}
+                  ry={2}
+                  fill={levelColor(day.count)}
+                  className="activity-heatmap__cell"
                 >
                   <title>
-                    {day.date}: {day.count}
+                    {day.count} contribution{day.count === 1 ? "" : "s"} on{" "}
+                    {day.date}
                   </title>
                 </rect>
-              )),
-            )}
-          </svg>
-        </div>
-        <div className="flex shrink-0 items-center gap-1.5 text-[10px] text-muted sm:text-[11px]">
-          <span>{strings.activity.less}</span>
-          {[0, 1, 2, 3, 5].map((c) => (
+              );
+            }),
+          )}
+        </svg>
+      </div>
+
+      <footer className="activity-panel__footer shrink-0">
+        <span className="activity-panel__legend-label">
+          {strings.activity.less}
+        </span>
+        <span className="activity-panel__legend">
+          {[0, 1, 2, 3, 4].map((level) => (
             <span
-              key={c}
-              className="inline-block size-3 rounded-sm"
-              style={{ background: level(c) }}
+              key={level}
+              className="activity-panel__swatch"
+              style={{ background: `var(--contrib-${level})` }}
             />
           ))}
-          <span>{strings.activity.more}</span>
-        </div>
-      </section>
-
-      <section className="card flex min-h-0 flex-col overflow-hidden p-3.5 sm:p-4">
-        <h2 className="shrink-0 text-sm font-semibold tracking-tight text-foreground/85">
-          {strings.activity.recent}
-        </h2>
-        {data.recent.length === 0 ? (
-          <p className="mt-3 text-sm text-muted">{strings.activity.noEvents}</p>
-        ) : (
-          <ul className="mt-2.5 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain">
-            {data.recent.map((item) => (
-              <li
-                key={item.id}
-                className="rounded-[var(--radius-sm)] px-1.5 py-1.5 hover:bg-[color-mix(in_oklab,#ffffff_6%,transparent)]"
-              >
-                <a
-                  href={item.html_url ?? "#"}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block"
-                >
-                  <div className="truncate text-sm text-foreground/90">
-                    {item.message}
-                  </div>
-                  <div className="mt-0.5 flex gap-2 text-[11px] text-muted">
-                    <span className="truncate">{item.repo}</span>
-                    <span className="shrink-0">{relativeTime(item.date)}</span>
-                  </div>
-                </a>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-    </div>
+        </span>
+        <span className="activity-panel__legend-label">
+          {strings.activity.more}
+        </span>
+      </footer>
+    </section>
   );
 }
+
+export function ActivityRecent() {
+  const { data, error, isLoading } = useActivity();
+  const status = (
+    <ActivityStatus error={error} isLoading={isLoading} empty={!data} />
+  );
+  if (isLoading || error || !data) return status;
+
+  return (
+    <section className="activity-recent card flex h-full min-h-0 flex-col overflow-hidden p-3">
+      <h2 className="activity-recent__title shrink-0">
+        {strings.activity.recent}
+      </h2>
+      {data.recent.length === 0 ? (
+        <p className="mt-3 text-sm text-muted">{strings.activity.noEvents}</p>
+      ) : (
+        <ul className="activity-recent__list mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain">
+          {data.recent.map((item) => (
+            <li
+              key={item.id}
+              className="rounded-[var(--radius-sm)] px-1.5 py-1.5 hover:bg-[color-mix(in_oklab,#ffffff_6%,transparent)]"
+            >
+              <a
+                href={item.html_url ?? "#"}
+                target="_blank"
+                rel="noreferrer"
+                className="block"
+              >
+                <div className="truncate text-sm text-foreground/90">
+                  {item.message}
+                </div>
+                <div className="mt-0.5 flex gap-2 text-[11px] text-muted">
+                  <span className="truncate">{item.repo}</span>
+                  <span className="shrink-0">{relativeTime(item.date)}</span>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+/** @deprecated use ActivityHeatmap */
+export const ActivityView = ActivityHeatmap;

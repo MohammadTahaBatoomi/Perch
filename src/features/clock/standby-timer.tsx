@@ -84,7 +84,8 @@ export function StandbyTimer() {
             <FlipDigit value={mm[0]!} />
             <FlipDigit value={mm[1]!} />
             <span className="standby-colon standby-colon--on" aria-hidden>
-              :
+              <span className="standby-colon__dot" />
+              <span className="standby-colon__dot" />
             </span>
             <FlipDigit value={ss[0]!} />
             <FlipDigit value={ss[1]!} />

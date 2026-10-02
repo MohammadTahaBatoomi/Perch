@@ -92,10 +92,10 @@ export const strings = {
     couldNotLoad: "Could not load activity",
     goHome: "Go to Home",
     noData: "No activity data yet.",
-    heatmapAria: "12-week activity heatmap",
+    heatmapAria: "Contribution activity in the last year",
     less: "Less",
     more: "More",
-    noEvents: "No recent contributions in this window.",
+    noEvents: "No recent contributions yet.",
   },
   pomodoro: {
     focus: "Focus",
