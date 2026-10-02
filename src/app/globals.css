@@ -1,26 +1,153 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --foreground: #f4f4f5;
+  --accent: #22d3ee;
+  --card: #0a0a0a;
+  --card-border: #18181b;
+  --night-dim-opacity: 0;
+}
+
+html[data-night="1"] {
+  --night-dim-opacity: 0.45;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-vazir: var(--font-vazir);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: #000;
+  color: var(--foreground);
+  overflow: hidden;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), var(--font-vazir), system-ui, sans-serif;
+}
+
+.font-vazir {
+  font-family: var(--font-vazir), var(--font-sans), system-ui, sans-serif;
+}
+
+.font-mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+.card {
+  height: 100%;
+  border-radius: 0.75rem;
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--card-border);
+}
+
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: var(--accent);
+  color: #09090b;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.btn-accent:hover {
+  filter: brightness(1.08);
+}
+
+.skeleton {
+  border-radius: 0.5rem;
+  background: linear-gradient(
+    90deg,
+    #18181b 0%,
+    #27272a 50%,
+    #18181b 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Landscape ~800x360 target: 2 columns, no page scroll */
+.home-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto;
+  height: 100%;
+}
+
+.activity-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+}
+
+@media (orientation: landscape), (min-width: 700px) {
+  .home-grid {
+    grid-template-columns: minmax(200px, 0.85fr) minmax(280px, 1.4fr);
+    grid-template-rows: 1fr;
+  }
+
+  .activity-grid {
+    display: grid;
+    grid-template-columns: minmax(240px, 1.1fr) minmax(220px, 0.9fr);
+    grid-template-rows: 1fr;
+    height: 100%;
+  }
+}
+
+@media (orientation: portrait) and (max-width: 699px) {
+  .home-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: auto;
+  }
+
+  .activity-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100%;
+    overflow: auto;
+  }
+
+  body {
+    overflow: auto;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

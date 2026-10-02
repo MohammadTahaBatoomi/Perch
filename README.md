@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Perch
 
-## Getting Started
+Desk-companion dashboard for an old Android phone.
 
-First, run the development server:
+Perch runs as a Next.js web app on your machine. Mount an old phone in landscape
+next to your monitor and open the app in a browser/WebView — clock, Jalali date,
+and GitHub status/commits.
+
+> Screenshots: _coming soon_ (MVP look & feel evaluation)
+
+## Stack
+
+- Next.js App Router
+- Tailwind CSS v4, TypeScript strict
+- GitHub OAuth (Authorize + Device Flow fallback)
+- Fonts via `next/font/local` (Geist + Vazirmatn slots in `src/fonts/`)
+
+> If `src/fonts/Vazirmatn-*.ttf` are placeholders, replace them with
+> [official Vazirmatn](https://github.com/rastikerdar/vazirmatn) files for best Persian glyphs.
+
+## Setup
+
+### 1. Create a GitHub OAuth App
+
+1. Go to [GitHub Developer Settings → OAuth Apps](https://github.com/settings/developers)
+2. **New OAuth App**
+   - Application name: `Perch` (or anything)
+   - Homepage URL: `http://localhost:3000`
+   - Authorization callback URL: `http://localhost:3000/api/github/oauth/callback`
+3. After creating, open the app and **enable Device Flow**
+4. Copy the **Client ID** (and Client Secret if using the Authorize button)
+
+### 2. Env
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Set:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+GITHUB_CLIENT_ID=Iv1.xxxxxxxx
+GITHUB_CLIENT_SECRET=...   # needed for Authorize button
+GITHUB_REDIRECT_URI=http://localhost:3000/api/github/oauth/callback
+SESSION_SECRET=<openssl rand -base64 32>
+# optional:
+GITHUB_OAUTH_SCOPES=read:user public_repo
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Private repos need the `repo` scope — a broader grant. Prefer public-only for MVP.
 
-## Learn More
+### 3. Install & run
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm install
+pnpm dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Serve on the LAN so the phone can reach your machine (`dev` already binds `0.0.0.0`):
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+# open http://<lan-ip>:3000 on the phone
+```
 
-## Deploy on Vercel
+```bash
+pnpm typecheck
+pnpm lint
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Secure context / Wake Lock caveats
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The Screen Wake Lock API and some keep-awake strategies require a **secure context**
+(HTTPS or localhost). Serving over plain `http://192.168.x.x` on the LAN is **not**
+secure, so:
+
+- Perch falls back to a muted looping video (NoSleep-style) after the first tap
+- The keep-awake indicator shows `active` / `fallback` / `unavailable` honestly
+- Options if you need native Wake Lock on the phone:
+  - Chrome flag: `chrome://flags/#unsafely-treat-insecure-origin-as-secure` → add `http://<lan-ip>:3000`
+  - Or local HTTPS with [mkcert](https://github.com/FiloSottile/mkcert)
+
+## PWA
+
+Manifest is included (`display: fullscreen`, `orientation: landscape`).
+
+**TODO:** Do not add a service worker in MVP — SW requires a secure context and
+complicates LAN HTTP usage.
+
+## License
+
+MIT

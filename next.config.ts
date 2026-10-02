@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
+  // Keep AGENTS.md from being rewritten on every `next dev`
+  agentRules: false,
 };
 
 export default nextConfig;
