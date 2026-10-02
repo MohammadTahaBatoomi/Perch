@@ -30,6 +30,8 @@ jobs:
     name: Build APK + AAB
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      PERCH_SERVER_URL: ${{ inputs.server_url || vars.PERCH_SERVER_URL || 'http://10.0.2.2:3000' }}
 
     steps:
       - name: Checkout
@@ -48,30 +50,11 @@ jobs:
       - name: Install JS deps
         run: pnpm install --frozen-lockfile
 
-      - name: Write Capacitor server URL
-        env:
-          PERCH_SERVER_URL: ${{ inputs.server_url || vars.PERCH_SERVER_URL || 'http://10.0.2.2:3000' }}
-        run: |
-          node -e "
-            const fs = require('fs');
-            const url = process.env.PERCH_SERVER_URL;
-            const cfg = {
-              appId: 'app.perch.desk',
-              appName: 'Perch',
-              webDir: 'public',
-              server: { url, cleartext: true },
-              android: { allowMixedContent: true }
-            };
-            fs.mkdirSync('android/app/src/main/assets', { recursive: true });
-            fs.writeFileSync('android/app/src/main/assets/capacitor.config.json', JSON.stringify(cfg));
-            console.log('server.url =', url);
-          "
-
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
           cache: gradle
 
       # ubuntu-latest ships Android SDK; sdkmanager is not on PATH by default.
@@ -89,6 +72,11 @@ jobs:
           "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;36.0.0" || \
           "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0" || \
           "$SDKMANAGER" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Capacitor sync
+        run: |
+          echo "PERCH_SERVER_URL=$PERCH_SERVER_URL"
+          npx cap sync android
 
       - name: Create CI keystore
         working-directory: android
