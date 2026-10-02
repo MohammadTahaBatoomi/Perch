@@ -36,7 +36,7 @@ async function fetcher(url: string): Promise<ActivityResponse> {
 }
 
 function level(count: number): string {
-  if (count === 0) return "#27272a";
+  if (count === 0) return "color-mix(in oklab, #ffffff 10%, transparent)";
   if (count === 1) return "color-mix(in oklab, var(--accent) 35%, #18181b)";
   if (count === 2) return "color-mix(in oklab, var(--accent) 55%, #18181b)";
   if (count <= 4) return "color-mix(in oklab, var(--accent) 75%, #18181b)";
@@ -67,7 +67,7 @@ export function ActivityView() {
       (error as Error & { status?: number }).status === 401;
     return (
       <div className="card flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-muted">
           {unauthorized
             ? "Connect GitHub first to see activity."
             : error.message || "Could not load activity"}
@@ -83,7 +83,7 @@ export function ActivityView() {
 
   if (!data) {
     return (
-      <div className="card flex h-full items-center justify-center p-6 text-sm text-zinc-500">
+      <div className="card flex h-full items-center justify-center p-6 text-sm text-muted">
         No activity data yet.
       </div>
     );
@@ -104,10 +104,12 @@ export function ActivityView() {
       <section className="card flex min-h-0 flex-col gap-3 overflow-hidden p-3">
         <div className="flex shrink-0 items-start justify-between gap-3">
           <div>
-            <h1 className="text-sm font-medium text-zinc-100">Activity</h1>
-            <p className="mt-0.5 text-[11px] text-zinc-500">{data.limitation}</p>
+            <h1 className="text-sm font-semibold tracking-tight text-foreground">
+              Activity
+            </h1>
+            <p className="mt-0.5 text-[11px] text-muted">{data.limitation}</p>
           </div>
-          <p className="shrink-0 font-mono text-xs text-zinc-400">
+          <p className="shrink-0 font-mono text-xs text-muted">
             {total} · 12w
           </p>
         </div>
@@ -127,9 +129,9 @@ export function ActivityView() {
                   y={di * (cell + gap)}
                   width={cell}
                   height={cell}
-                  rx={2}
+                  rx={3}
                   fill={level(day.count)}
-                  stroke="#3f3f46"
+                  stroke="color-mix(in oklab, #ffffff 14%, transparent)"
                   strokeWidth={0.5}
                 >
                   <title>
@@ -140,7 +142,7 @@ export function ActivityView() {
             )}
           </svg>
         </div>
-        <div className="flex shrink-0 items-center gap-1.5 text-[10px] text-zinc-500">
+        <div className="flex shrink-0 items-center gap-1.5 text-[10px] text-muted">
           <span>Less</span>
           {[0, 1, 2, 3, 5].map((c) => (
             <span
@@ -154,25 +156,27 @@ export function ActivityView() {
       </section>
 
       <section className="card flex min-h-0 flex-col overflow-hidden p-3">
-        <h2 className="shrink-0 text-xs font-medium text-zinc-300">Recent</h2>
+        <h2 className="shrink-0 text-xs font-semibold tracking-tight text-foreground/80">
+          Recent
+        </h2>
         {data.recent.length === 0 ? (
-          <p className="mt-3 text-sm text-zinc-500">
+          <p className="mt-3 text-sm text-muted">
             No recent GitHub events in the feed yet.
           </p>
         ) : (
           <ul className="mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto">
             {data.recent.map((item) => (
-              <li key={item.id} className="rounded px-1 py-1 hover:bg-zinc-900">
+              <li key={item.id} className="rounded-[var(--radius-sm)] px-1 py-1 hover:bg-[color-mix(in_oklab,#ffffff_6%,transparent)]">
                 <a
                   href={item.html_url ?? "#"}
                   target="_blank"
                   rel="noreferrer"
                   className="block"
                 >
-                  <div className="truncate text-xs text-zinc-200">
+                  <div className="truncate text-xs text-foreground/90">
                     {item.message}
                   </div>
-                  <div className="mt-0.5 flex gap-2 text-[10px] text-zinc-500">
+                  <div className="mt-0.5 flex gap-2 text-[10px] text-muted">
                     <span className="truncate">{item.repo}</span>
                     <span className="shrink-0">{relativeTime(item.date)}</span>
                   </div>

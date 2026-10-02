@@ -66,31 +66,35 @@ export function PomodoroBar() {
 
   return (
     <div
-      className={`flex items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors ${
+      className={`glass-clear flex items-center gap-2 rounded-[var(--radius-pill)] px-2.5 py-1 text-sm transition-colors ${
         flash ? "bg-[color-mix(in_oklab,var(--accent)_35%,transparent)]" : ""
       }`}
     >
-      <span className="text-[10px] uppercase tracking-wider text-zinc-500">
+      <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted">
         {mode === "work" ? "Focus" : "Break"}
       </span>
-      <span className="font-mono tabular-nums text-zinc-200">
+      <span className="font-mono tabular-nums text-foreground">
         {formatDigits(mm, d)}:{formatDigits(ss, d)}
       </span>
       <button
         type="button"
         onClick={toggle}
-        className="rounded p-1 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+        className="btn-icon"
         aria-label={running ? "Pause pomodoro" : "Start pomodoro"}
       >
-        {running ? <Pause size={14} /> : <Play size={14} />}
+        {running ? (
+          <Pause size={14} strokeWidth={2} />
+        ) : (
+          <Play size={14} strokeWidth={2} />
+        )}
       </button>
       <button
         type="button"
         onClick={reset}
-        className="rounded p-1 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+        className="btn-icon"
         aria-label="Reset pomodoro"
       >
-        <RotateCcw size={14} />
+        <RotateCcw size={14} strokeWidth={2} />
       </button>
     </div>
   );

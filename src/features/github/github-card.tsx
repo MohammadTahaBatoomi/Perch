@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Github, Loader2, RefreshCw } from "lucide-react";
 import { relativeTime } from "@/lib/format";
 import { useSettings } from "@/features/settings/settings-provider";
@@ -162,8 +162,8 @@ function ConnectFlow({ onConnected }: { onConnected: () => void }) {
   if (mode === "choose" || phase === "idle") {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-4">
-        <Github className="text-zinc-400" size={28} />
-        <p className="text-center text-sm text-zinc-400">
+        <Github className="text-muted" size={28} strokeWidth={1.75} />
+        <p className="text-center text-sm text-muted">
           Connect GitHub — Authorize page (needs Client Secret) or quick Device
           code (works now).
         </p>
@@ -172,7 +172,7 @@ function ConnectFlow({ onConnected }: { onConnected: () => void }) {
         </a>
         <button
           type="button"
-          className="text-xs text-zinc-400 underline hover:text-zinc-200"
+          className="btn-ghost text-xs underline"
           onClick={() => void startDevice()}
         >
           Use device code instead (no secret)
@@ -184,7 +184,7 @@ function ConnectFlow({ onConnected }: { onConnected: () => void }) {
   if (mode === "error" || phase === "error") {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-4">
-        <p className="text-sm text-red-400">{message ?? "Something went wrong"}</p>
+        <p className="text-sm text-danger">{message ?? "Something went wrong"}</p>
         <button
           type="button"
           className="btn-accent"
@@ -193,7 +193,7 @@ function ConnectFlow({ onConnected }: { onConnected: () => void }) {
             setPhase("idle");
           }}
         >
-          <RefreshCw size={14} className="mr-1 inline" />
+          <RefreshCw size={14} className="me-1 inline" strokeWidth={2} />
           Retry
         </button>
       </div>
@@ -205,25 +205,26 @@ function ConnectFlow({ onConnected }: { onConnected: () => void }) {
       <div className="flex items-start gap-3">
         {flow && <QrSvg value={flow.verification_uri} size={88} />}
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] uppercase tracking-wider text-zinc-500">
+          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted">
             Open and approve
           </p>
           <a
             href={flow?.verification_uri ?? "https://github.com/login/device"}
             target="_blank"
             rel="noreferrer"
-            className="text-xs text-[var(--accent)] underline"
+            className="text-xs text-accent underline"
           >
             github.com/login/device
           </a>
-          <p className="mt-2 font-mono text-2xl font-semibold tracking-[0.2em] text-zinc-50 sm:text-3xl">
+          <p className="mt-2 font-mono text-2xl font-semibold tracking-[0.2em] text-foreground sm:text-3xl">
             {flow?.user_code}
           </p>
-          <div className="mt-2 flex items-center gap-2 text-xs text-zinc-500">
+          <div className="mt-2 flex items-center gap-2 text-xs text-muted">
             <Loader2
               size={12}
               className="animate-spin"
               style={{ color: "var(--accent)" }}
+              strokeWidth={2}
             />
             Waiting · {Math.floor(remaining / 60)}:
             {String(remaining % 60).padStart(2, "0")}
@@ -243,6 +244,8 @@ export function RepoSelectSheet({
 }) {
   const { settings, update } = useSettings();
   const [q, setQ] = useState("");
+  const titleId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
   const { data, error, isLoading } = useSWR<{
     repos: {
       full_name: string;
@@ -251,6 +254,16 @@ export function RepoSelectSheet({
       stars: number;
     }[];
   }>(open ? "/api/github/repos" : null, fetcher);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    inputRef.current?.focus();
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -267,30 +280,39 @@ export function RepoSelectSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-3 sm:items-center">
-      <div className="card flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden">
-        <div className="flex items-center justify-between border-b border-zinc-800 px-3 py-2">
-          <h2 className="text-sm font-medium text-zinc-100">Choose repos</h2>
-          <button
-            type="button"
-            className="text-xs text-zinc-400"
-            onClick={onClose}
-          >
+    <div
+      className="scrim flex items-end justify-center p-3 sm:items-center"
+      role="presentation"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="sheet-panel glass-elevated flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+      >
+        <div className="flex items-center justify-between border-b border-[color-mix(in_oklab,#ffffff_8%,transparent)] px-3 py-2.5">
+          <h2 id={titleId} className="text-sm font-semibold tracking-tight text-foreground">
+            Choose repos
+          </h2>
+          <button type="button" className="btn-ghost px-2 py-1 text-xs" onClick={onClose}>
             Done
           </button>
         </div>
         <input
+          ref={inputRef}
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search…"
-          className="m-2 rounded border border-zinc-800 bg-zinc-950 px-2 py-1.5 text-sm text-zinc-100 outline-none focus:border-zinc-600"
+          className="field m-2 w-[calc(100%-1rem)]"
+          aria-label="Search repositories"
         />
         <div className="min-h-0 flex-1 overflow-auto px-2 pb-2">
-          {isLoading && <p className="p-2 text-sm text-zinc-500">Loading…</p>}
+          {isLoading && <p className="p-2 text-sm text-muted">Loading…</p>}
           {error && (
-            <p className="p-2 text-sm text-red-400">
-              {(error as Error).message}
-            </p>
+            <p className="p-2 text-sm text-danger">{(error as Error).message}</p>
           )}
           {filtered.map((r) => {
             const on = settings.selectedRepos.includes(r.full_name);
@@ -299,14 +321,11 @@ export function RepoSelectSheet({
                 key={r.full_name}
                 type="button"
                 onClick={() => toggle(r.full_name)}
-                className={`mb-1 flex w-full items-center justify-between rounded px-2 py-2 text-left text-sm ${
-                  on
-                    ? "bg-zinc-800 text-zinc-50"
-                    : "text-zinc-300 hover:bg-zinc-900"
-                }`}
+                data-active={on}
+                className="list-row mb-1"
               >
                 <span className="truncate">{r.full_name}</span>
-                <span className="ml-2 shrink-0 text-[10px] text-zinc-500">
+                <span className="ms-2 shrink-0 text-[10px] text-muted">
                   {r.private ? "private" : "public"} · ★{r.stars}
                 </span>
               </button>
@@ -387,22 +406,22 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
 
   return (
     <section className="card flex h-full min-h-0 flex-col overflow-hidden">
-      <header className="flex shrink-0 items-center gap-2 border-b border-zinc-900 px-3 py-2">
+      <header className="flex shrink-0 items-center gap-2 border-b border-[color-mix(in_oklab,#ffffff_8%,transparent)] px-3 py-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={me.avatar_url}
           alt=""
-          className="h-6 w-6 rounded-full"
+          className="h-6 w-6 rounded-full ring-1 ring-[color-mix(in_oklab,#ffffff_18%,transparent)]"
           width={24}
           height={24}
         />
-        <span className="truncate text-sm font-medium text-zinc-100">
+        <span className="truncate text-sm font-semibold tracking-tight text-foreground">
           {me.login}
         </span>
         <button
           type="button"
           onClick={onOpenRepos}
-          className="ml-auto text-[11px] text-zinc-400 hover:text-zinc-200"
+          className="btn-ghost ms-auto px-2 py-1 text-[11px]"
         >
           Repos ({settings.selectedRepos.length})
         </button>
@@ -410,14 +429,14 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
 
       {settings.selectedRepos.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-2 p-4">
-          <p className="text-sm text-zinc-500">No repos selected</p>
+          <p className="text-sm text-muted">No repos selected</p>
           <button type="button" className="btn-accent" onClick={onOpenRepos}>
             Choose repos
           </button>
         </div>
       ) : (
         <div className="grid min-h-0 flex-1 grid-rows-2">
-          <div className="min-h-0 overflow-auto border-b border-zinc-900 px-2 py-1">
+          <div className="min-h-0 overflow-auto border-b border-[color-mix(in_oklab,#ffffff_8%,transparent)] px-2 py-1">
             {statusLoading && !statusData && (
               <div className="skeleton m-1 h-12" />
             )}
@@ -433,12 +452,12 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
                   }}
                   title={r.ci_conclusion ?? r.ci_status ?? "no CI"}
                 />
-                <span className="min-w-0 flex-1 truncate font-medium text-zinc-200">
+                <span className="min-w-0 flex-1 truncate font-medium text-foreground/90">
                   {r.full_name.split("/")[1]}
                 </span>
-                <span className="shrink-0 text-zinc-500">★{r.stars}</span>
-                <span className="shrink-0 text-zinc-500">!{r.open_issues}</span>
-                <span className="w-8 shrink-0 text-right text-zinc-600">
+                <span className="shrink-0 text-muted">★{r.stars}</span>
+                <span className="shrink-0 text-muted">!{r.open_issues}</span>
+                <span className="w-8 shrink-0 text-end text-muted/70">
                   {r.pushed_at ? relativeTime(r.pushed_at) : "—"}
                 </span>
               </div>
@@ -449,21 +468,21 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
               <div className="skeleton m-1 h-12" />
             )}
             {!commitsLoading && commitsData?.commits.length === 0 && (
-              <p className="p-2 text-xs text-zinc-500">No recent commits</p>
+              <p className="p-2 text-xs text-muted">No recent commits</p>
             )}
             {commitsData?.commits.map((c) => {
               const isNew = seen.size > 0 && !seen.has(c.sha);
               return (
                 <div
                   key={`${c.repo}-${c.sha}`}
-                  className={`border-l-2 py-1.5 pl-2 transition-colors ${
+                  className={`border-s-2 py-1.5 ps-2 transition-colors ${
                     isNew
-                      ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_12%,transparent)]"
+                      ? "border-accent bg-[color-mix(in_oklab,var(--accent)_12%,transparent)]"
                       : "border-transparent"
                   }`}
                 >
-                  <p className="truncate text-xs text-zinc-200">{c.message}</p>
-                  <p className="text-[10px] text-zinc-500">
+                  <p className="truncate text-xs text-foreground/90">{c.message}</p>
+                  <p className="text-[10px] text-muted">
                     {c.repo.split("/")[1]} ·{" "}
                     <span className="font-mono">{c.sha}</span> ·{" "}
                     {relativeTime(c.date)}

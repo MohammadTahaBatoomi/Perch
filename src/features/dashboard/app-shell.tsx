@@ -4,6 +4,8 @@ import {
   createContext,
   useContext,
   useEffect,
+  useLayoutEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -25,6 +27,8 @@ import {
 } from "@/features/clock/keep-awake";
 import { RepoSelectSheet } from "@/features/github/github-card";
 import { SettingsDrawer } from "@/features/settings/settings-drawer";
+import { AmbientBackground } from "@/features/shell/ambient";
+import { useGlassSheen } from "@/lib/glass-sheen";
 
 const NAV = [
   { href: "/", label: "Home" },
@@ -44,36 +48,36 @@ function WakeIndicator({ status }: { status: WakeStatus }) {
     active: {
       icon: ShieldCheck,
       label: "Awake",
-      className: "text-emerald-400",
+      className: "text-success",
     },
     fallback: {
       icon: MonitorSmartphone,
       label: "Fallback",
-      className: "text-amber-400",
+      className: "text-warning",
     },
     unavailable: {
       icon: ShieldOff,
       label: "No wake lock",
-      className: "text-red-400",
+      className: "text-danger",
     },
     idle: {
       icon: ShieldAlert,
       label: "Tap to keep awake",
-      className: "text-zinc-500",
+      className: "text-muted",
     },
   } as const;
   const m = map[status];
   const Icon = m.icon;
   return (
     <span
-      className={`inline-flex items-center gap-1 text-[10px] ${m.className}`}
+      className={`inline-flex items-center gap-1 text-[10px] font-medium ${m.className}`}
       title={
         status === "unavailable"
           ? "Wake Lock needs a secure context (HTTPS). Using plain HTTP on LAN often blocks it."
           : undefined
       }
     >
-      <Icon size={12} />
+      <Icon size={12} strokeWidth={2} />
       {m.label}
     </span>
   );
@@ -93,72 +97,123 @@ function useBurnInShift() {
   return shift;
 }
 
-export function AppShell({ children }: { children: ReactNode }) {
+function useCondensedHeader() {
+  const [condensed, setCondensed] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setCondensed(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  return condensed;
+}
+
+function NavPills() {
   const pathname = usePathname();
+  const trackRef = useRef<HTMLElement | null>(null);
+  const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const [thumb, setThumb] = useState({ start: 0, width: 0 });
+
+  const activeIndex = NAV.findIndex((item) =>
+    item.href === "/" ? pathname === "/" : pathname.startsWith(item.href),
+  );
+
+  useLayoutEffect(() => {
+    const el = itemRefs.current[activeIndex >= 0 ? activeIndex : 0];
+    const track = trackRef.current;
+    if (!el || !track) return;
+    const trackBox = track.getBoundingClientRect();
+    const box = el.getBoundingClientRect();
+    setThumb({
+      start: box.left - trackBox.left,
+      width: box.width,
+    });
+  }, [activeIndex, pathname]);
+
+  return (
+    <nav ref={trackRef} className="nav-pill" aria-label="Primary">
+      <span
+        className="nav-pill__thumb"
+        style={{
+          insetInlineStart: thumb.start,
+          width: thumb.width,
+        }}
+        aria-hidden
+      />
+      {NAV.map((item, i) => {
+        const active =
+          item.href === "/"
+            ? pathname === "/"
+            : pathname.startsWith(item.href);
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            ref={(node) => {
+              itemRefs.current[i] = node;
+            }}
+            data-active={active}
+            className="nav-pill__item"
+          >
+            {item.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+export function AppShell({ children }: { children: ReactNode }) {
   const [reposOpen, setReposOpen] = useState(false);
   const { status: wakeStatus } = useKeepAwake();
   const { active: fs, toggle: toggleFs } = useFullscreen();
   const shift = useBurnInShift();
+  const condensed = useCondensedHeader();
+  const headerRef = useGlassSheen<HTMLElement>();
 
   return (
     <ShellCtx.Provider value={{ openRepos: () => setReposOpen(true) }}>
+      <AmbientBackground />
       <div
-        className="flex h-dvh w-full flex-col overflow-hidden bg-black text-zinc-100"
+        className="shell"
         style={{
           transform: `translate(${shift.x}px, ${shift.y}px)`,
           transition: "transform 1.2s ease",
         }}
       >
-        <header className="flex h-9 shrink-0 items-center gap-2 border-b border-zinc-900 px-2">
-          <Link
-            href="/"
-            className="font-mono text-xs font-semibold tracking-wide"
-            style={{ color: "var(--accent)" }}
-          >
+        <header
+          ref={headerRef}
+          className="shell__header glass-nav glass-sheen"
+          data-condensed={condensed}
+        >
+          <Link href="/" className="brand">
             Perch
           </Link>
-          <nav className="ml-2 flex gap-1">
-            {NAV.map((item) => {
-              const active =
-                item.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`rounded px-2 py-0.5 text-[11px] ${
-                    active
-                      ? "bg-zinc-800 text-zinc-100"
-                      : "text-zinc-500 hover:text-zinc-300"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-          <div className="ml-auto flex items-center gap-2">
+          <NavPills />
+          <div className="ms-auto flex items-center gap-1.5">
             <WakeIndicator status={wakeStatus} />
             <button
               type="button"
               onClick={() => void toggleFs()}
-              className="rounded p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+              className="btn-icon"
               aria-label={fs ? "Exit fullscreen" : "Enter fullscreen"}
             >
-              {fs ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+              {fs ? <Minimize2 size={14} strokeWidth={2} /> : <Maximize2 size={14} strokeWidth={2} />}
             </button>
             <SettingsDrawer onChooseRepos={() => setReposOpen(true)} />
           </div>
         </header>
 
-        <main className="min-h-0 flex-1 p-2">{children}</main>
+        <main className="shell__main">{children}</main>
 
         <RepoSelectSheet open={reposOpen} onClose={() => setReposOpen(false)} />
 
         <div
-          className="pointer-events-none fixed inset-0 z-40 bg-black transition-opacity duration-700"
-          style={{ opacity: "var(--night-dim-opacity, 0)" }}
+          className="pointer-events-none fixed inset-0 bg-black transition-opacity duration-700"
+          style={{
+            zIndex: "var(--z-night)",
+            opacity: "var(--night-dim-opacity, 0)",
+          }}
           aria-hidden
         />
         <Moon className="sr-only" />

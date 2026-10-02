@@ -68,8 +68,9 @@ export function ClockCard() {
   return (
     <section className="card flex h-full flex-col justify-center gap-2 p-4">
       <div
-        className="font-mono text-[clamp(2.75rem,8vw,4.5rem)] font-medium leading-none tracking-tight text-zinc-50 tabular-nums"
+        className="font-mono text-[clamp(2.75rem,8vw,4.5rem)] font-medium leading-none tracking-tight text-foreground tabular-nums"
         aria-live="polite"
+        style={{ letterSpacing: "var(--tracking-tight)" }}
       >
         <span>{formatDigits(h, d)}</span>
         <span
@@ -83,17 +84,15 @@ export function ClockCard() {
         <span>{formatDigits(m, d)}</span>
         {settings.showSeconds && (
           <>
-            <span className="mx-0.5 text-[0.45em] text-zinc-500">:</span>
-            <span className="text-[0.45em] text-zinc-400">
-              {formatDigits(s, d)}
-            </span>
+            <span className="mx-0.5 text-[0.45em] text-muted">:</span>
+            <span className="text-[0.45em] text-muted">{formatDigits(s, d)}</span>
           </>
         )}
       </div>
-      <div className="font-vazir text-base leading-snug text-zinc-200 sm:text-lg">
+      <div className="font-vazir text-base leading-snug text-foreground sm:text-lg">
         {jalaliDisplay}
       </div>
-      <div className="text-xs text-zinc-500 sm:text-sm">{gregorian}</div>
+      <div className="text-xs text-muted sm:text-sm">{gregorian}</div>
     </section>
   );
 }

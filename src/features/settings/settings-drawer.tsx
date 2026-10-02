@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Settings, X } from "lucide-react";
 import { ACCENT_PRESETS } from "@/lib/settings";
 import { useSettings } from "./settings-provider";
@@ -13,6 +13,8 @@ export function SettingsDrawer({
   const [open, setOpen] = useState(false);
   const { settings, update } = useSettings();
   const [busy, setBusy] = useState(false);
+  const titleId = useId();
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   const disconnect = async () => {
     setBusy(true);
@@ -28,29 +30,55 @@ export function SettingsDrawer({
     }
   };
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    closeRef.current?.focus();
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
     <>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+        className="btn-icon"
         aria-label="Settings"
+        aria-expanded={open}
+        aria-haspopup="dialog"
       >
-        <Settings size={16} />
+        <Settings size={16} strokeWidth={2} />
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/60">
-          <aside className="flex h-full w-full max-w-sm flex-col bg-zinc-950 ring-1 ring-zinc-800">
-            <header className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
-              <h2 className="text-sm font-medium text-zinc-100">Settings</h2>
+        <div
+          className="scrim flex justify-end"
+          role="presentation"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setOpen(false);
+          }}
+        >
+          <aside
+            className="drawer-panel glass-elevated flex h-full w-full max-w-sm flex-col rounded-none rounded-s-2xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+          >
+            <header className="flex items-center justify-between border-b border-[color-mix(in_oklab,#ffffff_8%,transparent)] px-4 py-3">
+              <h2 id={titleId} className="text-sm font-semibold tracking-tight text-foreground">
+                Settings
+              </h2>
               <button
+                ref={closeRef}
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded p-1 text-zinc-400 hover:bg-zinc-800"
+                className="btn-icon"
                 aria-label="Close settings"
               >
-                <X size={16} />
+                <X size={16} strokeWidth={2} />
               </button>
             </header>
 
@@ -72,7 +100,7 @@ export function SettingsDrawer({
               />
 
               <div>
-                <p className="mb-2 text-xs uppercase tracking-wider text-zinc-500">
+                <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.14em] text-muted">
                   Accent
                 </p>
                 <div className="flex gap-2">
@@ -82,12 +110,14 @@ export function SettingsDrawer({
                       type="button"
                       title={p.label}
                       onClick={() => update({ accent: p.id })}
-                      className={`h-7 w-7 rounded-full ring-2 ${
+                      className={`h-7 w-7 rounded-full transition-[box-shadow,transform] duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
                         settings.accent === p.id
-                          ? "ring-white"
-                          : "ring-transparent"
+                          ? "scale-105 ring-2 ring-white ring-offset-2 ring-offset-(--focus-ring-offset)"
+                          : "ring-2 ring-transparent hover:scale-105"
                       }`}
                       style={{ background: p.value }}
+                      aria-label={`Accent ${p.label}`}
+                      aria-pressed={settings.accent === p.id}
                     />
                   ))}
                 </div>
@@ -95,7 +125,7 @@ export function SettingsDrawer({
 
               <button
                 type="button"
-                className="w-full rounded bg-zinc-900 px-3 py-2 text-left text-zinc-200 ring-1 ring-zinc-800 hover:bg-zinc-800"
+                className="btn btn-secondary w-full justify-start rounded-md"
                 onClick={() => {
                   setOpen(false);
                   onChooseRepos();
@@ -108,7 +138,7 @@ export function SettingsDrawer({
                 type="button"
                 disabled={busy}
                 onClick={() => void disconnect()}
-                className="w-full rounded px-3 py-2 text-left text-red-400 ring-1 ring-red-900/50 hover:bg-red-950/40 disabled:opacity-50"
+                className="btn btn-danger w-full justify-start rounded-md"
               >
                 Disconnect GitHub
               </button>
@@ -131,21 +161,15 @@ function Toggle({
 }) {
   return (
     <label className="flex cursor-pointer items-center justify-between gap-3">
-      <span className="text-zinc-200">{label}</span>
+      <span className="font-medium text-foreground">{label}</span>
       <button
         type="button"
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className={`relative h-5 w-9 rounded-full transition ${
-          checked ? "bg-[var(--accent)]" : "bg-zinc-700"
-        }`}
+        className="switch"
       >
-        <span
-          className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition ${
-            checked ? "translate-x-4" : ""
-          }`}
-        />
+        <span className="switch__thumb" />
       </button>
     </label>
   );

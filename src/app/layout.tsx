@@ -52,7 +52,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#000000",
+  themeColor: "#050508",
   colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
@@ -66,7 +66,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${vazirmatn.variable} h-full antialiased`}
     >
-      <body className="h-full overflow-hidden bg-black text-zinc-100">
+      <body className="h-full overflow-hidden bg-background text-foreground">
         <SettingsProvider>{children}</SettingsProvider>
       </body>
     </html>
