@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Perch</string>
+    <string name="title_activity_main">Perch</string>
+    <string name="package_name">app.perch.desk</string>
+    <string name="custom_url_scheme">app.perch.desk</string>
+</resources>

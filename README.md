@@ -83,6 +83,20 @@ Manifest is included (`display: fullscreen`, `orientation: landscape`).
 **TODO:** Do not add a service worker in MVP — SW requires a secure context and
 complicates LAN HTTP usage.
 
+## Android (APK / AAB)
+
+GitHub Actions workflow: `.github/workflows/android.yml`
+
+- Runs on push to `main`/`master` (android-related paths) and **Actions → Android APK + AAB → Run workflow**
+- Uploads signed **APK + AAB** artifacts (`perch-android`)
+- Optional input / repo variable `PERCH_SERVER_URL` (default `http://10.0.2.2:3000` for emulator; use `http://<your-lan-ip>:3000` for a real phone)
+
+Local sync:
+
+```bash
+PERCH_SERVER_URL=http://192.168.1.10:3000 pnpm cap:sync
+```
+
 ## License
 
 MIT

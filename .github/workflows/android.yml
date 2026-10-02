@@ -1,0 +1,119 @@
+name: Android APK + AAB
+
+on:
+  workflow_dispatch:
+    inputs:
+      server_url:
+        description: "Perch server URL loaded in the WebView"
+        required: false
+        default: "http://10.0.2.2:3000"
+  push:
+    branches: [main, master]
+    paths:
+      - "android/**"
+      - "capacitor.config.ts"
+      - "public/**"
+      - ".github/workflows/android.yml"
+      - "package.json"
+  pull_request:
+    paths:
+      - "android/**"
+      - "capacitor.config.ts"
+      - ".github/workflows/android.yml"
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build APK + AAB
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install JS deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Write Capacitor server URL
+        env:
+          PERCH_SERVER_URL: ${{ inputs.server_url || vars.PERCH_SERVER_URL || 'http://10.0.2.2:3000' }}
+        run: |
+          node -e "
+            const fs = require('fs');
+            const url = process.env.PERCH_SERVER_URL;
+            const cfg = {
+              appId: 'app.perch.desk',
+              appName: 'Perch',
+              webDir: 'public',
+              server: { url, cleartext: true },
+              android: { allowMixedContent: true }
+            };
+            fs.mkdirSync('android/app/src/main/assets', { recursive: true });
+            fs.writeFileSync('android/app/src/main/assets/capacitor.config.json', JSON.stringify(cfg));
+            console.log('server.url =', url);
+          "
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept licenses
+        run: yes | sdkmanager --licenses >/dev/null || true
+
+      - name: Create CI keystore
+        working-directory: android
+        run: |
+          keytool -genkeypair -v \
+            -keystore perch-ci.jks \
+            -alias perch \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass perchci -keypass perchci \
+            -dname "CN=Perch CI, OU=Mobile, O=Perch, L=Local, S=NA, C=US"
+
+      - name: Build release APK + AAB
+        working-directory: android
+        env:
+          PERCH_STORE_FILE: perch-ci.jks
+          PERCH_STORE_PASSWORD: perchci
+          PERCH_KEY_ALIAS: perch
+          PERCH_KEY_PASSWORD: perchci
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon \
+            assembleRelease bundleRelease \
+            -x lint -x test
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p dist-android
+          cp android/app/build/outputs/apk/release/*.apk dist-android/ || true
+          cp android/app/build/outputs/bundle/release/*.aab dist-android/ || true
+          ls -lah dist-android
+
+      - name: Upload APK + AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: perch-android
+          path: dist-android/
+          if-no-files-found: error
+          retention-days: 14
