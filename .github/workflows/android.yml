@@ -74,18 +74,21 @@ jobs:
           java-version: 17
           cache: gradle
 
-      # ubuntu-latest already ships Android SDK; avoid android-actions/setup-android
-      # which still tries to install the removed legacy `tools` package.
+      # ubuntu-latest ships Android SDK; sdkmanager is not on PATH by default.
       - name: Configure Android SDK
         run: |
-          echo "ANDROID_HOME=${ANDROID_HOME:-$ANDROID_SDK_ROOT}" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-$ANDROID_HOME}" >> "$GITHUB_ENV"
-          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          echo "$SDK/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          echo "$SDK/platform-tools" >> "$GITHUB_PATH"
           echo "sdk.dir=$SDK" > android/local.properties
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" || \
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" || \
-          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          SDKMANAGER="$SDK/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;36.0.0" || \
+          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0" || \
+          "$SDKMANAGER" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
       - name: Create CI keystore
         working-directory: android
