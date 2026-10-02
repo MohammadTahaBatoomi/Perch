@@ -2,9 +2,12 @@
 
 import useSWR from "swr";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { AnimatePresence, m } from "motion/react";
 import { Github, Loader2, RefreshCw } from "lucide-react";
 import { relativeTime } from "@/lib/format";
 import { strings } from "@/lib/strings";
+import { snappy, soft, useReducedMotionPref } from "@/features/motion/provider";
 import { useSettings } from "@/features/settings/settings-provider";
 import { QrSvg } from "./qr";
 
@@ -248,8 +251,10 @@ export function RepoSelectSheet({
 }) {
   const { settings, update } = useSettings();
   const [q, setQ] = useState("");
+  const [mounted, setMounted] = useState(false);
   const titleId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  const reducedMotion = useReducedMotionPref();
   const { data, error, isLoading } = useSWR<{
     repos: {
       full_name: string;
@@ -260,16 +265,22 @@ export function RepoSelectSheet({
   }>(open ? "/api/github/repos" : null, fetcher);
 
   useEffect(() => {
+    const t = window.setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-    inputRef.current?.focus();
-    return () => window.removeEventListener("keydown", onKey);
+    const focusT = window.setTimeout(() => inputRef.current?.focus(), 40);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      clearTimeout(focusT);
+    };
   }, [open, onClose]);
-
-  if (!open) return null;
 
   const filtered =
     data?.repos.filter((r) =>
@@ -283,64 +294,100 @@ export function RepoSelectSheet({
     update({ selectedRepos: [...set] });
   };
 
-  return (
-    <div
-      className="scrim flex items-end justify-center p-3 sm:items-center"
-      role="presentation"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div
-        className="sheet-panel glass-elevated flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-      >
-        <div className="flex items-center justify-between border-b border-[color-mix(in_oklab,#ffffff_8%,transparent)] px-3 py-2.5">
-          <h2 id={titleId} className="text-sm font-semibold tracking-tight text-foreground">
-            {strings.github.chooseRepos}
-          </h2>
-          <button type="button" className="btn-ghost px-2 py-1 text-xs" onClick={onClose}>
-            {strings.github.done}
-          </button>
-        </div>
-        <input
-          ref={inputRef}
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder={strings.github.search}
-          className="field m-2 w-[calc(100%-1rem)]"
-          aria-label={strings.github.searchAria}
-        />
-        <div className="min-h-0 flex-1 overflow-auto px-2 pb-2">
-          {isLoading && (
-            <p className="p-2 text-sm text-muted">{strings.github.loading}</p>
-          )}
-          {error && (
-            <p className="p-2 text-sm text-danger">{(error as Error).message}</p>
-          )}
-          {filtered.map((r) => {
-            const on = settings.selectedRepos.includes(r.full_name);
-            return (
-              <button
-                key={r.full_name}
-                type="button"
-                onClick={() => toggle(r.full_name)}
-                data-active={on}
-                className="list-row mb-1"
+  if (!mounted) return null;
+
+  return createPortal(
+    <AnimatePresence>
+      {open ? (
+        <m.div
+          key="repo-scrim"
+          className="scrim items-center justify-center p-4"
+          role="presentation"
+          initial={reducedMotion ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={reducedMotion ? undefined : { opacity: 0 }}
+          transition={snappy}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) onClose();
+          }}
+        >
+          <m.div
+            className="glass-elevated flex max-h-[min(90dvh,32rem)] w-full max-w-md flex-col overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            initial={
+              reducedMotion ? false : { opacity: 0, y: 28, scale: 0.94 }
+            }
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={
+              reducedMotion
+                ? undefined
+                : { opacity: 0, y: 16, scale: 0.96 }
+            }
+            transition={soft}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex shrink-0 items-center justify-between border-b border-[color-mix(in_oklab,#ffffff_8%,transparent)] px-4 py-3">
+              <h2
+                id={titleId}
+                className="text-sm font-semibold tracking-tight text-foreground"
               >
-                <span className="truncate">{r.full_name}</span>
-                <span className="ms-2 shrink-0 text-[10px] text-muted">
-                  {r.private ? strings.github.private : strings.github.public} ·
-                  ★{r.stars}
-                </span>
+                {strings.github.chooseRepos}
+              </h2>
+              <button
+                type="button"
+                className="btn-ghost px-2 py-1 text-xs"
+                onClick={onClose}
+              >
+                {strings.github.done}
               </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+            </div>
+            <div className="shrink-0 px-4 pt-3">
+              <input
+                ref={inputRef}
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder={strings.github.search}
+                className="field"
+                aria-label={strings.github.searchAria}
+              />
+            </div>
+            <div className="min-h-0 flex-1 overflow-auto px-3 py-3">
+              {isLoading && (
+                <p className="p-2 text-sm text-muted">{strings.github.loading}</p>
+              )}
+              {error && (
+                <p className="p-2 text-sm text-danger">
+                  {(error as Error).message}
+                </p>
+              )}
+              {filtered.map((r) => {
+                const on = settings.selectedRepos.includes(r.full_name);
+                return (
+                  <button
+                    key={r.full_name}
+                    type="button"
+                    onClick={() => toggle(r.full_name)}
+                    data-active={on}
+                    className="list-row mb-1"
+                  >
+                    <span className="truncate">{r.full_name}</span>
+                    <span className="ms-2 shrink-0 text-[10px] text-muted">
+                      {r.private
+                        ? strings.github.private
+                        : strings.github.public}{" "}
+                      · ★{r.stars}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </m.div>
+        </m.div>
+      ) : null}
+    </AnimatePresence>,
+    document.body,
   );
 }
 

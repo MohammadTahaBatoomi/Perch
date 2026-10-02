@@ -90,8 +90,8 @@ export function ActivityView() {
     );
   }
 
-  const cell = 11;
-  const gap = 3;
+  const cell = 14;
+  const gap = 4;
   const weeks: Day[][] = [];
   for (let i = 0; i < data.days.length; i += 7) {
     weeks.push(data.days.slice(i, i + 7));
@@ -101,23 +101,25 @@ export function ActivityView() {
   const total = data.days.reduce((n, d) => n + d.count, 0);
 
   return (
-    <div className="activity-grid h-full gap-2">
-      <section className="card flex min-h-0 flex-col gap-3 overflow-hidden p-3">
+    <div className="activity-stack h-full">
+      <section className="card flex min-h-0 flex-col gap-2.5 overflow-hidden p-3.5 sm:p-4">
         <div className="flex shrink-0 items-start justify-between gap-3">
-          <div>
-            <h1 className="text-sm font-semibold tracking-tight text-foreground">
+          <div className="min-w-0">
+            <h1 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">
               {strings.activity.title}
             </h1>
-            <p className="mt-0.5 text-[11px] text-muted">{data.limitation}</p>
+            <p className="mt-0.5 text-[11px] leading-snug text-muted sm:text-xs">
+              {data.limitation}
+            </p>
           </div>
-          <p className="shrink-0 font-mono text-xs text-muted">
+          <p className="shrink-0 font-mono text-xs text-muted sm:text-sm">
             {total} · 12w
           </p>
         </div>
         <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden">
           <svg
             viewBox={`0 0 ${width} ${height}`}
-            className="h-[120px] w-full sm:h-[140px]"
+            className="activity-heatmap"
             preserveAspectRatio="xMinYMid meet"
             role="img"
             aria-label={strings.activity.heatmapAria}
@@ -143,12 +145,12 @@ export function ActivityView() {
             )}
           </svg>
         </div>
-        <div className="flex shrink-0 items-center gap-1.5 text-[10px] text-muted">
+        <div className="flex shrink-0 items-center gap-1.5 text-[10px] text-muted sm:text-[11px]">
           <span>{strings.activity.less}</span>
           {[0, 1, 2, 3, 5].map((c) => (
             <span
               key={c}
-              className="inline-block size-2.5 rounded-sm"
+              className="inline-block size-3 rounded-sm"
               style={{ background: level(c) }}
             />
           ))}
@@ -156,26 +158,29 @@ export function ActivityView() {
         </div>
       </section>
 
-      <section className="card flex min-h-0 flex-col overflow-hidden p-3">
-        <h2 className="shrink-0 text-xs font-semibold tracking-tight text-foreground/80">
+      <section className="card flex min-h-0 flex-col overflow-hidden p-3.5 sm:p-4">
+        <h2 className="shrink-0 text-sm font-semibold tracking-tight text-foreground/85">
           {strings.activity.recent}
         </h2>
         {data.recent.length === 0 ? (
           <p className="mt-3 text-sm text-muted">{strings.activity.noEvents}</p>
         ) : (
-          <ul className="mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto">
+          <ul className="mt-2.5 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain">
             {data.recent.map((item) => (
-              <li key={item.id} className="rounded-[var(--radius-sm)] px-1 py-1 hover:bg-[color-mix(in_oklab,#ffffff_6%,transparent)]">
+              <li
+                key={item.id}
+                className="rounded-[var(--radius-sm)] px-1.5 py-1.5 hover:bg-[color-mix(in_oklab,#ffffff_6%,transparent)]"
+              >
                 <a
                   href={item.html_url ?? "#"}
                   target="_blank"
                   rel="noreferrer"
                   className="block"
                 >
-                  <div className="truncate text-xs text-foreground/90">
+                  <div className="truncate text-sm text-foreground/90">
                     {item.message}
                   </div>
-                  <div className="mt-0.5 flex gap-2 text-[10px] text-muted">
+                  <div className="mt-0.5 flex gap-2 text-[11px] text-muted">
                     <span className="truncate">{item.repo}</span>
                     <span className="shrink-0">{relativeTime(item.date)}</span>
                   </div>

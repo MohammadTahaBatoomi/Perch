@@ -10,6 +10,7 @@ export const strings = {
   nav: {
     home: "Home",
     activity: "Activity",
+    clock: "Clock",
     primary: "Primary",
   },
   wake: {
@@ -94,7 +95,7 @@ export const strings = {
     heatmapAria: "12-week activity heatmap",
     less: "Less",
     more: "More",
-    noEvents: "No recent GitHub events in the feed yet.",
+    noEvents: "No recent contributions in this window.",
   },
   pomodoro: {
     focus: "Focus",

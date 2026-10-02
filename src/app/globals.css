@@ -691,13 +691,12 @@ body {
   box-shadow:
     0 2px 6px rgb(0 0 0 / 0.35),
     inset 0 1px 0 rgb(255 255 255 / 0.8);
-  transition:
-    inset-inline-start var(--duration-med) var(--ease-spring),
-    transform var(--duration-med) var(--ease-spring);
+  will-change: auto;
 }
 
-.switch[aria-checked="true"] .switch__thumb {
-  inset-inline-start: calc(100% - 1.4rem);
+/* Fallback if Motion hasn't painted yet */
+.switch[aria-checked="true"] .switch__thumb:not([style*="transform"]) {
+  transform: translateX(1.2rem);
 }
 
 .nav-pill {
@@ -752,8 +751,9 @@ body {
   position: fixed;
   inset: 0;
   z-index: var(--z-overlay);
+  display: flex;
   background: var(--scrim);
-  animation: fade-in var(--duration-med) var(--ease-out);
+  animation: none;
 }
 
 @keyframes fade-in {
@@ -1096,10 +1096,39 @@ body {
   padding-inline: 0.5rem;
 }
 
+.home-standby__hero--fill {
+  place-items: stretch;
+  padding-block: 0;
+  padding-inline: 0;
+}
+
+.home-standby__hero--fill > * {
+  min-block-size: 0;
+  block-size: 100%;
+}
+
+.activity-stack {
+  display: grid;
+  grid-template-rows: minmax(9.5rem, 0.42fr) minmax(0, 1fr);
+  block-size: 100%;
+  min-block-size: 0;
+  gap: 0.55rem;
+}
+
+.activity-heatmap {
+  inline-size: 100%;
+  block-size: 100%;
+  min-block-size: 7.5rem;
+}
+
 .home-standby__periphery {
   min-block-size: 0;
   max-block-size: 38%;
   padding-inline: 0.15rem;
+}
+
+.home-standby--activity .home-standby__periphery {
+  max-block-size: 28%;
 }
 
 @media (orientation: landscape), (min-width: 700px) {
@@ -1108,9 +1137,21 @@ body {
     grid-template-rows: 1fr;
   }
 
+  .home-standby--activity {
+    grid-template-columns: minmax(0, 1.65fr) minmax(11rem, 0.32fr);
+  }
+
   .home-standby__periphery {
     max-block-size: none;
     block-size: 100%;
+  }
+
+  .home-standby--activity .home-standby__periphery {
+    max-block-size: none;
+  }
+
+  .activity-stack {
+    grid-template-rows: minmax(11rem, 0.48fr) minmax(0, 1fr);
   }
 }
 
@@ -1123,6 +1164,42 @@ body {
   inline-size: min(100%, 92cqw);
   max-inline-size: 100%;
   text-align: center;
+}
+
+/* Dedicated /clock page — clock fills the viewport */
+.clock-fullscreen {
+  display: grid;
+  place-items: center;
+  block-size: 100%;
+  inline-size: 100%;
+  min-block-size: 0;
+  container-type: size;
+}
+
+.clock-fullscreen .standby-hero {
+  inline-size: min(100%, 96cqw);
+  gap: 1rem;
+}
+
+.clock-fullscreen .standby-digital__time {
+  font-size: clamp(4rem, 28cqmin, 12rem);
+}
+
+.clock-fullscreen .standby-digital__time--timer {
+  font-size: clamp(2.75rem, 18cqmin, 6rem);
+}
+
+.clock-fullscreen .standby-analog {
+  inline-size: clamp(12rem, 55vmin, 22rem);
+  block-size: clamp(12rem, 55vmin, 22rem);
+}
+
+.clock-fullscreen .standby-timer__ring-wrap {
+  inline-size: clamp(12rem, 52vmin, 20rem);
+}
+
+.clock-fullscreen .standby-hero__date {
+  font-size: clamp(0.85rem, 3cqw, 1.15rem);
 }
 
 @media (orientation: portrait) and (max-width: 699px) {
@@ -1295,46 +1372,52 @@ body {
 
 /* Analog Minimal */
 .standby-analog {
-  inline-size: min(52cqmin, 16rem);
-  aspect-ratio: 1;
+  inline-size: clamp(9rem, 42vmin, 16rem);
+  block-size: clamp(9rem, 42vmin, 16rem);
+  flex-shrink: 0;
 }
 
 .standby-analog__face {
+  display: block;
   inline-size: 100%;
   block-size: 100%;
   overflow: visible;
 }
 
 .standby-analog__disk {
-  fill: color-mix(in oklab, #ffffff 6%, transparent);
-  stroke: color-mix(in oklab, #ffffff 14%, transparent);
-  stroke-width: 0.8;
+  fill: color-mix(in oklab, #ffffff 7%, transparent);
+  stroke: color-mix(in oklab, #ffffff 18%, transparent);
+  stroke-width: 1;
 }
 
 .standby-analog__tick {
-  stroke: color-mix(in oklab, #ffffff 28%, transparent);
-  stroke-width: 0.7;
+  stroke: color-mix(in oklab, #ffffff 32%, transparent);
+  stroke-width: 0.9;
   stroke-linecap: round;
+}
+
+.standby-analog__tick--cardinal {
+  stroke: color-mix(in oklab, #ffffff 55%, transparent);
+  stroke-width: 1.4;
 }
 
 .standby-analog__hand {
   stroke-linecap: round;
-  transform-origin: 50px 50px;
 }
 
 .standby-analog__hand--hour {
-  stroke: color-mix(in oklab, #ffffff 82%, transparent);
-  stroke-width: 2.2;
+  stroke: color-mix(in oklab, #ffffff 88%, transparent);
+  stroke-width: 2.6;
 }
 
 .standby-analog__hand--minute {
-  stroke: color-mix(in oklab, #ffffff 72%, transparent);
-  stroke-width: 1.4;
+  stroke: color-mix(in oklab, #ffffff 78%, transparent);
+  stroke-width: 1.7;
 }
 
 .standby-analog__hand--second {
   stroke: var(--accent);
-  stroke-width: 0.7;
+  stroke-width: 0.9;
 }
 
 .standby-analog__hub {
@@ -1379,6 +1462,17 @@ body {
 .standby-timer__digits {
   position: relative;
   z-index: 1;
+  display: grid;
+  place-items: center;
+  /* Keep mm:ss clear of the progress ring */
+  padding: 18%;
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.standby-timer__digits .standby-digital__time--timer {
+  font-size: clamp(1.75rem, 11cqmin, 3.25rem);
 }
 
 .standby-timer__controls {
@@ -1492,6 +1586,16 @@ html[data-night-mode="1"] .glass-sheen::before,
 html[data-night-mode="1"] .standby-digit--out,
 html[data-night-mode="1"] .standby-digit--in {
   animation: none !important;
+}
+
+/* Never stack two digits when flip animation is disabled */
+html[data-night-mode="1"] .standby-digit--out {
+  display: none !important;
+}
+
+html[data-night-mode="1"] .standby-digit--in {
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

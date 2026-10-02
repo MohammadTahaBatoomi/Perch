@@ -4,16 +4,27 @@ type Props = {
   hours: number;
   minutes: number;
   seconds: number;
-  showSeconds: boolean;
+  /** Fractional seconds 0–1 for smooth sweep (optional). */
+  secondFraction?: number;
 };
 
 /**
  * Thin-hand analog, no numerals. Soft translucent face (no backdrop-filter).
+ * Seconds hand is always accent-colored (StandBy Analog Minimal).
  */
-export function AnalogClock({ hours, minutes, seconds, showSeconds }: Props) {
-  const hAngle = ((hours % 12) + minutes / 60) * 30;
-  const mAngle = (minutes + seconds / 60) * 6;
-  const sAngle = seconds * 6;
+export function AnalogClock({
+  hours,
+  minutes,
+  seconds,
+  secondFraction = 0,
+}: Props) {
+  const continuousSeconds = seconds + secondFraction;
+  // 12h face: 30° per hour, +0.5° per minute
+  const hAngle = ((hours % 12) + minutes / 60 + continuousSeconds / 3600) * 30;
+  // 6° per minute, +0.1° per second
+  const mAngle = (minutes + continuousSeconds / 60) * 6;
+  // 6° per second
+  const sAngle = continuousSeconds * 6;
 
   return (
     <div className="standby-analog" role="presentation">
@@ -23,50 +34,59 @@ export function AnalogClock({ hours, minutes, seconds, showSeconds }: Props) {
         aria-hidden
       >
         <circle className="standby-analog__disk" cx="50" cy="50" r="46" />
+
+        {/* 12 hour ticks; longer marks at cardinals */}
         {Array.from({ length: 12 }, (_, i) => {
           const a = (i * 30 * Math.PI) / 180;
-          const x1 = 50 + Math.sin(a) * 40;
-          const y1 = 50 - Math.cos(a) * 40;
-          const x2 = 50 + Math.sin(a) * 44;
-          const y2 = 50 - Math.cos(a) * 44;
+          const cardinal = i % 3 === 0;
+          const inner = cardinal ? 36 : 40;
+          const outer = 44;
           return (
             <line
               key={i}
-              className="standby-analog__tick"
-              x1={x1}
-              y1={y1}
-              x2={x2}
-              y2={y2}
+              className={
+                cardinal
+                  ? "standby-analog__tick standby-analog__tick--cardinal"
+                  : "standby-analog__tick"
+              }
+              x1={50 + Math.sin(a) * inner}
+              y1={50 - Math.cos(a) * inner}
+              x2={50 + Math.sin(a) * outer}
+              y2={50 - Math.cos(a) * outer}
             />
           );
         })}
-        <line
-          className="standby-analog__hand standby-analog__hand--hour"
-          x1="50"
-          y1="50"
-          x2="50"
-          y2="28"
-          transform={`rotate(${hAngle} 50 50)`}
-        />
-        <line
-          className="standby-analog__hand standby-analog__hand--minute"
-          x1="50"
-          y1="50"
-          x2="50"
-          y2="18"
-          transform={`rotate(${mAngle} 50 50)`}
-        />
-        {showSeconds && (
+
+        {/* Hands in <g> so rotation origin stays reliable across browsers */}
+        <g transform={`rotate(${hAngle} 50 50)`}>
           <line
-            className="standby-analog__hand standby-analog__hand--second"
+            className="standby-analog__hand standby-analog__hand--hour"
             x1="50"
             y1="54"
             x2="50"
-            y2="14"
-            transform={`rotate(${sAngle} 50 50)`}
+            y2="28"
           />
-        )}
-        <circle className="standby-analog__hub" cx="50" cy="50" r="1.8" />
+        </g>
+        <g transform={`rotate(${mAngle} 50 50)`}>
+          <line
+            className="standby-analog__hand standby-analog__hand--minute"
+            x1="50"
+            y1="56"
+            x2="50"
+            y2="18"
+          />
+        </g>
+        <g transform={`rotate(${sAngle} 50 50)`}>
+          <line
+            className="standby-analog__hand standby-analog__hand--second"
+            x1="50"
+            y1="58"
+            x2="50"
+            y2="14"
+          />
+        </g>
+
+        <circle className="standby-analog__hub" cx="50" cy="50" r="2" />
       </svg>
     </div>
   );

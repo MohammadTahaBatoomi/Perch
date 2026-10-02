@@ -2,9 +2,16 @@
 
 import { useEffect, useState } from "react";
 
+function shouldSkipFlip(): boolean {
+  if (typeof window === "undefined") return true;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return true;
+  if (document.documentElement.dataset.nightMode === "1") return true;
+  return false;
+}
+
 /**
  * Single digit with translateY + opacity flip when the value changes.
- * Respects prefers-reduced-motion (instant swap).
+ * Instant swap under reduced-motion or StandBy night mode (no stacked layers).
  */
 export function FlipDigit({
   value,
@@ -19,11 +26,7 @@ export function FlipDigit({
   useEffect(() => {
     if (value === current) return;
 
-    const reduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-
-    if (reduced) {
+    if (shouldSkipFlip()) {
       const t = window.setTimeout(() => {
         setCurrent(value);
         setOutgoing(null);
@@ -41,6 +44,21 @@ export function FlipDigit({
       clearTimeout(clear);
     };
   }, [value, current]);
+
+  // Drop any in-flight outgoing layer when night mode turns on mid-flip
+  useEffect(() => {
+    const sync = () => {
+      if (document.documentElement.dataset.nightMode === "1") {
+        setOutgoing(null);
+      }
+    };
+    const obs = new MutationObserver(sync);
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-night-mode"],
+    });
+    return () => obs.disconnect();
+  }, []);
 
   return (
     <span className={`standby-digit-slot ${className}`} aria-hidden>

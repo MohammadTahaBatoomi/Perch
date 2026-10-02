@@ -14,10 +14,9 @@ import { useHour12, useNow } from "./use-now";
  */
 export function ClockCard() {
   const { settings } = useSettings();
-  const now = useNow();
+  const now = useNow(settings.clockStyle === "analog" && !settings.showTimer);
   const hour12 = useHour12(settings.hour12);
-  const [forcedSolid, setForcedSolid] = useState(false);
-  const [noTranslucency, setNoTranslucency] = useState(false);
+  const [forceOpaqueDigital, setForceOpaqueDigital] = useState(false);
 
   useEffect(() => {
     const contrast = window.matchMedia("(prefers-contrast: more)");
@@ -25,8 +24,7 @@ export function ClockCard() {
       "(prefers-reduced-transparency: reduce)",
     );
     const sync = () => {
-      setForcedSolid(contrast.matches);
-      setNoTranslucency(transparency.matches);
+      setForceOpaqueDigital(contrast.matches || transparency.matches);
     };
     const t = window.setTimeout(sync, 0);
     contrast.addEventListener("change", sync);
@@ -38,11 +36,14 @@ export function ClockCard() {
     };
   }, []);
 
+  /** Analog is never replaced by a11y digital overrides. */
   const clockStyle = useMemo(() => {
-    if (forcedSolid) return "solid" as const;
-    if (noTranslucency && settings.clockStyle === "glass") return "solid" as const;
-    return settings.clockStyle;
-  }, [forcedSolid, noTranslucency, settings.clockStyle]);
+    const style = settings.clockStyle;
+    if (style === "analog") return "analog" as const;
+    if (forceOpaqueDigital && style === "glass") return "solid" as const;
+    if (forceOpaqueDigital) return "solid" as const;
+    return style;
+  }, [forceOpaqueDigital, settings.clockStyle]);
 
   const minuteKey = now
     ? `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}-${now.getMinutes()}`
@@ -87,7 +88,7 @@ export function ClockCard() {
           hours={now.getHours()}
           minutes={now.getMinutes()}
           seconds={now.getSeconds()}
-          showSeconds={settings.showSeconds}
+          secondFraction={now.getMilliseconds() / 1000}
         />
       ) : (
         <DigitalClock

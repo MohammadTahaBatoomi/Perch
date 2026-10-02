@@ -2,27 +2,41 @@
 
 import { useEffect, useState } from "react";
 
-export function useNow(): Date | null {
+/**
+ * Wall-clock ticker. Default: once per second (digital).
+ * Pass `smooth` for ~4fps updates (analog second-hand sweep without heavy rAF).
+ */
+export function useNow(smooth = false): Date | null {
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
     let raf = 0;
     let timeout: ReturnType<typeof setTimeout>;
+    let cancelled = false;
 
     const tick = () => {
+      if (cancelled) return;
       setNow(new Date());
-      const ms = 1000 - (Date.now() % 1000);
-      timeout = setTimeout(() => {
-        raf = requestAnimationFrame(tick);
-      }, ms);
+      if (smooth) {
+        // ~4 Hz — smooth enough for analog, cheap on old phones
+        timeout = setTimeout(() => {
+          raf = requestAnimationFrame(tick);
+        }, 250);
+      } else {
+        const ms = 1000 - (Date.now() % 1000);
+        timeout = setTimeout(() => {
+          raf = requestAnimationFrame(tick);
+        }, ms);
+      }
     };
 
     tick();
     return () => {
+      cancelled = true;
       clearTimeout(timeout);
       cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [smooth]);
 
   return now;
 }

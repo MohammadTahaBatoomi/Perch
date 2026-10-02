@@ -11,6 +11,7 @@ import {
 } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AnimatePresence, m } from "motion/react";
 import {
   Maximize2,
   Minimize2,
@@ -28,11 +29,13 @@ import {
 import { RepoSelectSheet } from "@/features/github/github-card";
 import { SettingsDrawer } from "@/features/settings/settings-drawer";
 import { AmbientBackground } from "@/features/shell/ambient";
+import { snappy, useMotionSafe } from "@/features/motion/provider";
 import { useGlassSheen } from "@/lib/glass-sheen";
 import { strings } from "@/lib/strings";
 
 const NAV = [
   { href: "/", label: strings.nav.home },
+  { href: "/clock", label: strings.nav.clock },
   { href: "/activity", label: strings.nav.activity },
 ] as const;
 
@@ -163,12 +166,14 @@ function NavPills() {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   const [reposOpen, setReposOpen] = useState(false);
   const { status: wakeStatus } = useKeepAwake();
   const { active: fs, toggle: toggleFs } = useFullscreen();
   const shift = useBurnInShift();
   const condensed = useCondensedHeader();
   const headerRef = useGlassSheen<HTMLElement>();
+  const motionSafe = useMotionSafe();
 
   return (
     <ShellCtx.Provider value={{ openRepos: () => setReposOpen(true) }}>
@@ -207,7 +212,20 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="shell__main">{children}</main>
+        <main className="shell__main">
+          <AnimatePresence mode="sync" initial={false}>
+            <m.div
+              key={pathname}
+              className="h-full min-h-0"
+              initial={motionSafe ? { opacity: 0, y: 8 } : false}
+              animate={{ opacity: 1, y: 0 }}
+              exit={motionSafe ? { opacity: 0, y: -6 } : undefined}
+              transition={snappy}
+            >
+              {children}
+            </m.div>
+          </AnimatePresence>
+        </main>
 
         <RepoSelectSheet open={reposOpen} onClose={() => setReposOpen(false)} />
         <Moon className="sr-only" />

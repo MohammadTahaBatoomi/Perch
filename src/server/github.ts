@@ -386,10 +386,10 @@ export async function getRecentCommits(
     .slice(0, limit);
 }
 
-function localDateKey(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
+function utcDateKey(d: Date): string {
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
 
@@ -411,6 +411,12 @@ export type ActivityItem = {
   repo: string;
   message: string;
   html_url: string | null;
+};
+
+export type ActivityHeatmapResult = {
+  days: { date: string; count: number }[];
+  recent: ActivityItem[];
+  source: "calendar" | "commits" | "events";
 };
 
 async function listUserEvents(
@@ -436,16 +442,132 @@ function emptyHeatmapWindow(): {
 } {
   const weeks = 12;
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const start = new Date(today);
-  start.setDate(start.getDate() - (weeks * 7 - 1));
-  start.setDate(start.getDate() - start.getDay());
+  // Align buckets to UTC calendar dates (matches GitHub contribution calendar)
+  const todayUtc = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
+  );
+  const start = new Date(todayUtc);
+  start.setUTCDate(start.getUTCDate() - (weeks * 7 - 1));
+  start.setUTCDate(start.getUTCDate() - start.getUTCDay());
 
   const days: { date: string; count: number }[] = [];
-  for (let d = new Date(start); d <= today; d.setDate(d.getDate() + 1)) {
-    days.push({ date: localDateKey(d), count: 0 });
+  for (let d = new Date(start); d <= todayUtc; d.setUTCDate(d.getUTCDate() + 1)) {
+    days.push({ date: utcDateKey(d), count: 0 });
   }
-  return { days, start, today };
+  return { days, start, today: todayUtc };
+}
+
+type CalendarDay = { date: string; contributionCount: number };
+
+async function fetchContributionCalendar(
+  token: string,
+  from: Date,
+  to: Date,
+): Promise<ActivityHeatmapResult> {
+  const query = `
+    query($from: DateTime!, $to: DateTime!) {
+      viewer {
+        contributionsCollection(from: $from, to: $to) {
+          contributionCalendar {
+            weeks {
+              contributionDays {
+                date
+                contributionCount
+              }
+            }
+          }
+          commitContributionsByRepository(maxRepositories: 15) {
+            repository { nameWithOwner }
+            contributions(first: 8, orderBy: { field: OCCURRED_AT, direction: DESC }) {
+              nodes {
+                occurredAt
+                commitCount
+                url
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const res = await fetch("https://api.github.com/graphql", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+      "User-Agent": "Perch-Desk-Companion",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      query,
+      variables: {
+        from: from.toISOString(),
+        to: new Date(to.getTime() + 24 * 60 * 60 * 1000 - 1).toISOString(),
+      },
+    }),
+    cache: "no-store",
+  });
+
+  if (res.status === 401) throw new GitHubApiError("Unauthorized", 401);
+  if (!res.ok) throw new GitHubApiError(`GitHub GraphQL ${res.status}`, res.status);
+
+  const json = (await res.json()) as {
+    data?: {
+      viewer?: {
+        contributionsCollection?: {
+          contributionCalendar?: {
+            weeks?: { contributionDays: CalendarDay[] }[];
+          };
+          commitContributionsByRepository?: {
+            repository: { nameWithOwner: string };
+            contributions: {
+              nodes: {
+                occurredAt: string;
+                commitCount: number;
+                url: string;
+              }[];
+            };
+          }[];
+        };
+      };
+    };
+    errors?: { message: string }[];
+  };
+
+  if (json.errors?.length) {
+    throw new GitHubApiError(json.errors[0]?.message ?? "GraphQL error", 502);
+  }
+
+  const collection = json.data?.viewer?.contributionsCollection;
+  const weeks = collection?.contributionCalendar?.weeks ?? [];
+  const days: { date: string; count: number }[] = [];
+  for (const week of weeks) {
+    for (const day of week.contributionDays) {
+      days.push({ date: day.date, count: day.contributionCount });
+    }
+  }
+
+  const recent: ActivityItem[] = [];
+  for (const block of collection?.commitContributionsByRepository ?? []) {
+    const repo = block.repository.nameWithOwner;
+    for (const node of block.contributions.nodes) {
+      recent.push({
+        id: `${node.url}-${node.occurredAt}`,
+        date: node.occurredAt,
+        repo,
+        message: `${node.commitCount} commit${node.commitCount === 1 ? "" : "s"}`,
+        html_url: node.url,
+      });
+    }
+  }
+  recent.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+
+  return {
+    days,
+    recent: recent.slice(0, 30),
+    source: "calendar",
+  };
 }
 
 async function heatmapFromRepoCommits(
@@ -454,13 +576,10 @@ async function heatmapFromRepoCommits(
   login: string,
   start: Date,
   today: Date,
-): Promise<{
-  days: { date: string; count: number }[];
-  recent: ActivityItem[];
-}> {
+): Promise<ActivityHeatmapResult> {
   const counts = new Map<string, number>();
-  for (let d = new Date(start); d <= today; d.setDate(d.getDate() + 1)) {
-    counts.set(localDateKey(d), 0);
+  for (let d = new Date(start); d <= today; d.setUTCDate(d.getUTCDate() + 1)) {
+    counts.set(utcDateKey(d), 0);
   }
 
   const since = start.toISOString();
@@ -469,20 +588,25 @@ async function heatmapFromRepoCommits(
     repos.map(async (full) => {
       const [owner, name] = full.split("/");
       if (!owner || !name) return [] as GitHubCommit[];
+      const collected: GitHubCommit[] = [];
       try {
-        const items = await ghFetch<CommitApiItem[]>(
-          token,
-          `/repos/${owner}/${name}/commits?author=${encodeURIComponent(login)}&since=${encodeURIComponent(since)}&per_page=100`,
-        );
-        return items.map((c) => mapCommit(full, c));
+        for (let page = 1; page <= 3; page++) {
+          const items = await ghFetch<CommitApiItem[]>(
+            token,
+            `/repos/${owner}/${name}/commits?author=${encodeURIComponent(login)}&since=${encodeURIComponent(since)}&per_page=100&page=${page}`,
+          );
+          collected.push(...items.map((c) => mapCommit(full, c)));
+          if (items.length < 100) break;
+        }
       } catch {
-        return [] as GitHubCommit[];
+        /* private / missing access */
       }
+      return collected;
     }),
   );
 
   for (const c of batches.flat()) {
-    const key = localDateKey(new Date(c.date));
+    const key = utcDateKey(new Date(c.date));
     if (counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
     recent.push({
       id: `${c.sha}-${c.repo}`,
@@ -497,23 +621,80 @@ async function heatmapFromRepoCommits(
   return {
     days: [...counts.entries()].map(([date, count]) => ({ date, count })),
     recent: recent.slice(0, 30),
+    source: "commits",
   };
 }
 
+function sumCounts(days: { count: number }[]): number {
+  return days.reduce((n, d) => n + d.count, 0);
+}
+
 /**
- * 12-week activity from the authenticated user's events feed
- * (PushEvent commit counts), with commit-API fallback.
+ * 12-week activity. Prefers GitHub contribution calendar (GraphQL),
+ * then selected-repo commits, then events feed.
  */
 export async function getActivityHeatmap(
   token: string,
   repoFilter: string[] = [],
-): Promise<{
-  days: { date: string; count: number }[];
-  recent: ActivityItem[];
-}> {
+): Promise<ActivityHeatmapResult> {
   const me = await getMe(token);
   const { days: emptyDays, start, today } = emptyHeatmapWindow();
-  const startMs = start.getTime();
+
+  // Official contribution calendar (matches profile graph)
+  try {
+    const calendar = await fetchContributionCalendar(token, start, today);
+    if (calendar.days.length > 0 && sumCounts(calendar.days) > 0) {
+      if (repoFilter.length > 0) {
+        const filter = new Set(repoFilter.map((r) => r.toLowerCase()));
+        const recent = calendar.recent.filter((r) =>
+          filter.has(r.repo.toLowerCase()),
+        );
+        // Prefer commit-level recent for selected repos when available
+        if (recent.length === 0) {
+          try {
+            const fromCommits = await heatmapFromRepoCommits(
+              token,
+              repoFilter,
+              me.login,
+              start,
+              today,
+            );
+            if (fromCommits.recent.length > 0) {
+              return {
+                days: calendar.days,
+                recent: fromCommits.recent,
+                source: "calendar",
+              };
+            }
+          } catch {
+            /* keep calendar recent */
+          }
+        }
+        return { ...calendar, recent };
+      }
+      return calendar;
+    }
+  } catch {
+    /* fall through */
+  }
+
+  // Selected / discovered repos → commits API
+  if (repoFilter.length > 0) {
+    try {
+      const fromCommits = await heatmapFromRepoCommits(
+        token,
+        repoFilter,
+        me.login,
+        start,
+        today,
+      );
+      if (sumCounts(fromCommits.days) > 0 || fromCommits.recent.length > 0) {
+        return fromCommits;
+      }
+    } catch {
+      /* fall through */
+    }
+  }
 
   const filter =
     repoFilter.length > 0
@@ -524,35 +705,21 @@ export async function getActivityHeatmap(
   try {
     events = await listUserEvents(token, me.login);
   } catch {
-    // Events endpoint can fail for some tokens; fall back below.
     events = [];
-  }
-
-  if (events.length === 0) {
-    let repos = repoFilter;
-    if (repos.length === 0) {
-      const all = await listRepos(token);
-      repos = all.slice(0, 12).map((r) => r.full_name);
-    }
-    if (repos.length === 0) {
-      return { days: emptyDays, recent: [] };
-    }
-    return heatmapFromRepoCommits(token, repos, me.login, start, today);
   }
 
   const counts = new Map<string, number>();
   for (const d of emptyDays) counts.set(d.date, 0);
-
   const recent: ActivityItem[] = [];
 
   for (const ev of events) {
     const created = new Date(ev.created_at);
-    if (created.getTime() < startMs) continue;
+    if (created.getTime() < start.getTime()) continue;
     const repo = ev.repo?.name;
     if (!repo) continue;
     if (filter && !filter.has(repo.toLowerCase())) continue;
 
-    const day = localDateKey(created);
+    const day = utcDateKey(created);
 
     if (ev.type === "PushEvent") {
       const n = ev.payload.commits?.length ?? ev.payload.size ?? 1;
@@ -598,11 +765,24 @@ export async function getActivityHeatmap(
   }
 
   recent.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
-
-  return {
+  const fromEvents: ActivityHeatmapResult = {
     days: [...counts.entries()].map(([date, count]) => ({ date, count })),
     recent: recent.slice(0, 30),
+    source: "events",
   };
+
+  if (sumCounts(fromEvents.days) > 0) return fromEvents;
+
+  // Last resort: commits on selected or recently pushed repos
+  let repos = repoFilter;
+  if (repos.length === 0) {
+    const all = await listRepos(token);
+    repos = all.slice(0, 12).map((r) => r.full_name);
+  }
+  if (repos.length === 0) {
+    return { days: emptyDays, recent: [], source: "events" };
+  }
+  return heatmapFromRepoCommits(token, repos, me.login, start, today);
 }
 
 export async function revokeGrant(token: string): Promise<void> {
