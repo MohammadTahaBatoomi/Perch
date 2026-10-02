@@ -33,10 +33,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -68,17 +68,24 @@ jobs:
           "
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 17
           cache: gradle
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Accept licenses
-        run: yes | sdkmanager --licenses >/dev/null || true
+      # ubuntu-latest already ships Android SDK; avoid android-actions/setup-android
+      # which still tries to install the removed legacy `tools` package.
+      - name: Configure Android SDK
+        run: |
+          echo "ANDROID_HOME=${ANDROID_HOME:-$ANDROID_SDK_ROOT}" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-$ANDROID_HOME}" >> "$GITHUB_ENV"
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          echo "sdk.dir=$SDK" > android/local.properties
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" || \
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" || \
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
       - name: Create CI keystore
         working-directory: android
@@ -106,8 +113,8 @@ jobs:
       - name: Collect artifacts
         run: |
           mkdir -p dist-android
-          cp android/app/build/outputs/apk/release/*.apk dist-android/ || true
-          cp android/app/build/outputs/bundle/release/*.aab dist-android/ || true
+          cp android/app/build/outputs/apk/release/*.apk dist-android/
+          cp android/app/build/outputs/bundle/release/*.aab dist-android/
           ls -lah dist-android
 
       - name: Upload APK + AAB
