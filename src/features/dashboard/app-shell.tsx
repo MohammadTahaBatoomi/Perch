@@ -236,7 +236,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <footer className="shell__footer">
           <nav className="shell__footer-links" aria-label="Credits">
-            <a
+            <Link
               href={FOOTER.repo}
               target="_blank"
               rel="noreferrer"
@@ -244,25 +244,25 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <Github size={11} strokeWidth={2} aria-hidden />
               {strings.footer.repo}
-            </a>
+            </Link>
             <span className="shell__footer-dot" aria-hidden />
-            <a
+            <Link
               href={FOOTER.site}
               target="_blank"
               rel="noreferrer"
               className="shell__footer-link"
             >
               {strings.footer.site}
-            </a>
+            </Link>
             <span className="shell__footer-dot" aria-hidden />
-            <a
+            <Link
               href={FOOTER.github}
               target="_blank"
               rel="noreferrer"
               className="shell__footer-link"
             >
               {strings.footer.github}
-            </a>
+            </Link>
           </nav>
           <p className="shell__footer-credit">{strings.footer.credit}</p>
         </footer>

@@ -105,12 +105,7 @@
   --sheen-x: 50%;
   --sheen-y: 0%;
 
-  --night-dim-opacity: 0;
   color-scheme: dark;
-}
-
-html[data-night="1"] {
-  --night-dim-opacity: 0.45;
 }
 
 /* Light tokens reserved; app remains dark-only in MVP */
@@ -1081,6 +1076,7 @@ body {
   block-size: 1.4rem;
   flex-shrink: 0;
   border-radius: 9999px;
+  object-fit: cover;
   box-shadow:
     0 0 0 1px color-mix(in oklab, #ffffff 16%, transparent),
     0 0 0 3px color-mix(in oklab, #ffffff 4%, transparent);

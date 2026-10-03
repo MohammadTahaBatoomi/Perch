@@ -271,17 +271,9 @@ export function ActivityRecent() {
         <p className="mt-3 text-sm text-muted">{strings.activity.noEvents}</p>
       ) : (
         <ul className="activity-recent__list mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain">
-          {data.recent.map((item) => (
-            <li
-              key={item.id}
-              className="rounded-[var(--radius-sm)] px-1.5 py-1.5 hover:bg-[color-mix(in_oklab,#ffffff_6%,transparent)]"
-            >
-              <a
-                href={item.html_url ?? "#"}
-                target="_blank"
-                rel="noreferrer"
-                className="block"
-              >
+          {data.recent.map((item) => {
+            const body = (
+              <>
                 <div className="truncate text-sm text-foreground/90">
                   {item.message}
                 </div>
@@ -289,14 +281,30 @@ export function ActivityRecent() {
                   <span className="truncate">{item.repo}</span>
                   <span className="shrink-0">{relativeTime(item.date)}</span>
                 </div>
-              </a>
-            </li>
-          ))}
+              </>
+            );
+            return (
+              <li
+                key={item.id}
+                className="rounded-[var(--radius-sm)] px-1.5 py-1.5 hover:bg-[color-mix(in_oklab,#ffffff_6%,transparent)]"
+              >
+                {item.html_url ? (
+                  <Link
+                    href={item.html_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block"
+                  >
+                    {body}
+                  </Link>
+                ) : (
+                  <div className="block">{body}</div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>
   );
 }
-
-/** @deprecated use ActivityHeatmap */
-export const ActivityView = ActivityHeatmap;

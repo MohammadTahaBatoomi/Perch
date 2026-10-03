@@ -51,8 +51,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.dataset.nightMode = nightModeActive ? "1" : "0";
-    // Keep legacy attr in sync for any leftover CSS
-    document.documentElement.dataset.night = nightModeActive ? "1" : "0";
   }, [nightModeActive]);
 
   const update = useCallback((patch: Partial<Settings>) => {

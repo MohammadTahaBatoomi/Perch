@@ -10,6 +10,8 @@ import {
   type CSSProperties,
 } from "react";
 import { createPortal } from "react-dom";
+import Image from "next/image";
+import Link from "next/link";
 import { AnimatePresence, m } from "motion/react";
 import { CircleAlert, Github, Loader2, RefreshCw, Star } from "lucide-react";
 import { relativeTime } from "@/lib/format";
@@ -222,14 +224,14 @@ function ConnectFlow({ onConnected }: { onConnected: () => void }) {
           <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted">
             {strings.github.openAndApprove}
           </p>
-          <a
+          <Link
             href={flow?.verification_uri ?? "https://github.com/login/device"}
             target="_blank"
             rel="noreferrer"
             className="text-xs text-accent underline"
           >
             github.com/login/device
-          </a>
+          </Link>
           <p className="mt-2 font-mono text-2xl font-semibold tracking-[0.2em] text-foreground sm:text-3xl">
             {flow?.user_code}
           </p>
@@ -468,15 +470,14 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
   return (
     <section className="card gh-card flex h-full min-h-0 flex-col overflow-hidden">
       <header className="gh-card__header">
-        <a
+        <Link
           href={`https://github.com/${me.login}`}
           target="_blank"
           rel="noreferrer"
           className="gh-card__profile"
           title={`@${me.login} on GitHub`}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={me.avatar_url}
             alt=""
             className="gh-card__avatar"
@@ -484,7 +485,7 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
             height={24}
           />
           <span className="gh-card__login">{me.login}</span>
-        </a>
+        </Link>
         <button
           type="button"
           onClick={onOpenRepos}
@@ -529,7 +530,7 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
                       r.ci_conclusion ?? r.ci_status ?? strings.github.noCi
                     }
                   />
-                  <a
+                  <Link
                     href={`https://github.com/${r.full_name}`}
                     target="_blank"
                     rel="noreferrer"
@@ -537,7 +538,7 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
                     title={r.full_name}
                   >
                     {name}
-                  </a>
+                  </Link>
                   <div className="gh-repo-row__meta" aria-label="Repository stats">
                     <span
                       className="gh-repo-stat"
