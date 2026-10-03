@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { MotionProvider } from "@/features/motion/provider";
 import { SettingsProvider } from "@/features/settings/settings-provider";
+import { BootSplash } from "@/features/shell/boot-splash";
 import { strings } from "@/lib/strings";
 import "./globals.css";
 
@@ -50,7 +51,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="h-full overflow-hidden bg-background text-foreground">
         <MotionProvider>
-          <SettingsProvider>{children}</SettingsProvider>
+          <SettingsProvider>
+            <BootSplash>{children}</BootSplash>
+          </SettingsProvider>
         </MotionProvider>
       </body>
     </html>

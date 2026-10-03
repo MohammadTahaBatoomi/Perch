@@ -24,11 +24,6 @@ import {
   ShieldOff,
 } from "lucide-react";
 
-const FOOTER = {
-  repo: "https://github.com/MohammadTahaBatoomi/Perch",
-  site: "https://cipherunit.xyz/",
-  github: "https://github.com/MohammadTahaBatoomi",
-} as const;
 import {
   useFullscreen,
   useKeepAwake,
@@ -38,9 +33,16 @@ import { RepoSelectSheet } from "@/features/github/github-card";
 import { SettingsDrawer } from "@/features/settings/settings-drawer";
 import { useSettings } from "@/features/settings/settings-provider";
 import { AmbientBackground } from "@/features/shell/ambient";
+import { BrandMark } from "@/features/shell/brand-mark";
 import { snappy, soft, useMotionSafe } from "@/features/motion/provider";
 import { useGlassSheen } from "@/lib/glass-sheen";
 import { strings } from "@/lib/strings";
+
+const FOOTER = {
+  repo: "https://github.com/MohammadTahaBatoomi/Perch",
+  site: "https://cipherunit.xyz/",
+  github: "https://github.com/MohammadTahaBatoomi",
+} as const;
 
 const NAV = [
   { href: "/", label: strings.nav.home },
@@ -227,8 +229,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <Link
                 href="/"
-                className="font-mono text-xs font-[650] tracking-[0.04em] text-accent no-underline [text-shadow:0_0_14px_color-mix(in_oklab,var(--accent)_28%,transparent)]"
+                className="inline-flex items-center gap-2 font-mono text-sm font-[650] tracking-[0.04em] text-accent no-underline [text-shadow:0_0_14px_color-mix(in_oklab,var(--accent)_28%,transparent)]"
               >
+                <BrandMark className="size-5 shrink-0" />
                 {strings.app.name}
               </Link>
               <NavPills />

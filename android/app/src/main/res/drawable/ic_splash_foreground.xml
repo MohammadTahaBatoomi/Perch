@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Geometric Perch bird, centered in adaptive safe zone -->
+    <group
+        android:translateX="22"
+        android:translateY="26"
+        android:scaleX="2"
+        android:scaleY="2">
+        <path
+            android:fillColor="#22d3ee"
+            android:pathData="M7.5,16.2 L12.8,11.2 L21.2,13.4 L19.4,19.6 H11.6 Z" />
+        <path
+            android:fillColor="#22d3ee"
+            android:pathData="M22.2,6.85 a3.35,3.35 0 1,1 0,6.7 a3.35,3.35 0 1,1 0,-6.7 Z" />
+        <path
+            android:fillColor="#22d3ee"
+            android:pathData="M25.1,9.5 L28.6,10.5 L25.1,11.8 Z" />
+        <path
+            android:fillColor="#22d3ee"
+            android:pathData="M7.5,16.2 L3.2,12.8 L4.6,16.2 L3.2,19.6 Z" />
+        <path
+            android:strokeColor="#22d3ee"
+            android:strokeWidth="1.5"
+            android:strokeLineCap="round"
+            android:pathData="M12.6,19.6 L11.9,23.4" />
+        <path
+            android:strokeColor="#22d3ee"
+            android:strokeWidth="1.5"
+            android:strokeLineCap="round"
+            android:pathData="M16.6,19.6 L17.4,23.4" />
+        <path
+            android:fillColor="#050508"
+            android:pathData="M23.1,9.5 m-0.7,0 a0.7,0.7 0 1,1 1.4,0 a0.7,0.7 0 1,1 -1.4,0" />
+        <path
+            android:fillColor="#ECFEFF"
+            android:fillAlpha="0.85"
+            android:pathData="M5,24 h22 a0.85,0.85 0 0,1 0,1.7 H5 a0.85,0.85 0 0,1 0,-1.7 Z" />
+    </group>
+</vector>

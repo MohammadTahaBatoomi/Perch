@@ -14,12 +14,14 @@ const config: CapacitorConfig = {
   appId: "app.perch.desk",
   appName: "Perch",
   webDir: "public",
+  backgroundColor: "#050508",
   server: {
     url: serverUrl,
     cleartext: isHttp,
   },
   android: {
     allowMixedContent: isHttp,
+    backgroundColor: "#050508",
   },
   plugins: {
     SystemBars: {

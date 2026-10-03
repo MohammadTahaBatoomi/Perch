@@ -6,6 +6,7 @@ export const strings = {
     name: "Perch",
     description: "Desk-companion dashboard for an old Android phone",
     shortDescription: "Desk companion for developers",
+    loading: "Loading desk…",
   },
   nav: {
     home: "Home",

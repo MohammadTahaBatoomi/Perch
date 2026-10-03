@@ -153,6 +153,48 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+.app-loader__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 1.5px solid color-mix(in oklab, var(--accent) 35%, transparent);
+  box-shadow: 0 0 24px -6px color-mix(in oklab, var(--accent) 45%, transparent);
+  animation: app-loader-pulse 1.6s var(--ease-out) infinite;
+}
+
+.app-loader__mark {
+  animation: app-loader-breathe 2.4s var(--ease-out) infinite;
+}
+
+@keyframes app-loader-pulse {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes app-loader-breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-loader__ring,
+  .app-loader__mark {
+    animation: none;
+  }
+}
+
 ::selection {
   background: color-mix(in oklab, var(--accent) 40%, transparent);
   color: var(--foreground);
