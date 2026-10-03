@@ -126,11 +126,13 @@ Perch ships a [Capacitor](https://capacitorjs.com) shell so the phone gets a rea
 
 | Setting | Default | Notes |
 | --- | --- | --- |
-| `PERCH_SERVER_URL` (input or repo variable) | `http://10.0.2.2:3000` | Emulator address. For a real phone use `http://<your-lan-ip>:3000`. |
+| `PERCH_SERVER_URL` (input or repo variable) | `https://perch-one-rosy.vercel.app` | Production desk URL. Override with `http://10.0.2.2:3000` (emulator) or `http://<your-lan-ip>:3000` (LAN). |
 
 **Build locally:**
 
 ```bash
+pnpm cap:sync
+# or point at a local server:
 PERCH_SERVER_URL=http://192.168.1.10:3000 pnpm cap:sync
 ```
 

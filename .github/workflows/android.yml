@@ -6,7 +6,7 @@ on:
       server_url:
         description: "Perch server URL loaded in the WebView"
         required: false
-        default: "http://10.0.2.2:3000"
+        default: "https://perch-one-rosy.vercel.app"
   push:
     branches: [main, master]
     paths:
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      PERCH_SERVER_URL: ${{ inputs.server_url || vars.PERCH_SERVER_URL || 'http://10.0.2.2:3000' }}
+      PERCH_SERVER_URL: ${{ inputs.server_url || vars.PERCH_SERVER_URL || 'https://perch-one-rosy.vercel.app' }}
 
     steps:
       - name: Checkout
