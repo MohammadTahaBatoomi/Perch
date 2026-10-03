@@ -21,6 +21,15 @@ const config: CapacitorConfig = {
   android: {
     allowMixedContent: isHttp,
   },
+  plugins: {
+    SystemBars: {
+      // Desk companion: paint edge-to-edge; native padding caused gray letterboxing.
+      insetsHandling: "disable",
+      initialViewportFitValueHint: "cover",
+      style: "DARK",
+      hidden: true,
+    },
+  },
 };
 
 export default config;
