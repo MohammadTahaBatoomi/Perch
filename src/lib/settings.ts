@@ -19,6 +19,24 @@ export const CLOCK_STYLES = [
 
 export type ClockStyleId = (typeof CLOCK_STYLES)[number]["id"];
 
+/** StandBy timer duration presets (minutes). */
+export const TIMER_PRESETS = [1, 5, 10, 15, 30, 45, 60] as const;
+export type TimerMinutes = (typeof TIMER_PRESETS)[number];
+
+const TIMER_PRESET_LABEL_KEY = {
+  1: "m1",
+  5: "m5",
+  10: "m10",
+  15: "m15",
+  30: "m30",
+  45: "m45",
+  60: "m60",
+} as const satisfies Record<TimerMinutes, keyof typeof strings.clock.timerPresets>;
+
+export function timerPresetLabel(minutes: TimerMinutes): string {
+  return strings.clock.timerPresets[TIMER_PRESET_LABEL_KEY[minutes]];
+}
+
 export const SettingsSchema = z.object({
   version: z.literal(1),
   showSeconds: z.boolean().default(false),
@@ -29,6 +47,18 @@ export const SettingsSchema = z.object({
   clockStyle: z.enum(["glass", "solid", "analog"]).default("glass"),
   hour12: z.enum(["system", "12", "24"]).default("system"),
   showTimer: z.boolean().default(false),
+  timerSound: z.boolean().default(true),
+  timerMinutes: z
+    .union([
+      z.literal(1),
+      z.literal(5),
+      z.literal(10),
+      z.literal(15),
+      z.literal(30),
+      z.literal(45),
+      z.literal(60),
+    ])
+    .default(15),
   hideHeader: z.boolean().default(false),
   hideFooter: z.boolean().default(false),
   accent: z
@@ -49,6 +79,8 @@ export const DEFAULT_SETTINGS: Settings = {
   clockStyle: "glass",
   hour12: "system",
   showTimer: false,
+  timerSound: true,
+  timerMinutes: 15,
   hideHeader: false,
   hideFooter: false,
   accent: "cyan",

@@ -4,7 +4,13 @@ import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, m } from "motion/react";
 import { Settings, X } from "lucide-react";
-import { ACCENT_PRESETS, CLOCK_STYLES } from "@/lib/settings";
+import {
+  ACCENT_PRESETS,
+  CLOCK_STYLES,
+  TIMER_PRESETS,
+  timerPresetLabel,
+  type TimerMinutes,
+} from "@/lib/settings";
 import { strings } from "@/lib/strings";
 import {
   snappy,
@@ -130,6 +136,36 @@ export function SettingsDrawer({
                   checked={settings.showTimer}
                   onChange={(v) => update({ showTimer: v })}
                 />
+                {settings.showTimer ? (
+                  <>
+                    <Toggle
+                      label={strings.clock.timerSound}
+                      checked={settings.timerSound}
+                      onChange={(v) => update({ timerSound: v })}
+                    />
+                    <fieldset className="space-y-2 border-0 p-0">
+                      <legend className="mb-2 text-[10px] font-medium uppercase tracking-[0.14em] text-muted">
+                        {strings.clock.timerDuration}
+                      </legend>
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {TIMER_PRESETS.map((mins) => (
+                          <button
+                            key={mins}
+                            type="button"
+                            onClick={() =>
+                              update({ timerMinutes: mins as TimerMinutes })
+                            }
+                            className="cursor-pointer rounded-[var(--radius-md)] border-none bg-transparent px-2 py-2 text-center font-mono text-[length:var(--text-body)] font-semibold tabular-nums text-foreground/88 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-[color-mix(in_oklab,#ffffff_6%,transparent)] data-[active=true]:bg-[color-mix(in_oklab,#ffffff_11%,transparent)] data-[active=true]:text-foreground data-[active=true]:shadow-[inset_0_0_0_1px_var(--glass-border)]"
+                            data-active={settings.timerMinutes === mins}
+                            aria-pressed={settings.timerMinutes === mins}
+                          >
+                            {timerPresetLabel(mins)}
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
+                  </>
+                ) : null}
                 <Toggle
                   label={strings.chrome.hideHeader}
                   checked={settings.hideHeader}
