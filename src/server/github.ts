@@ -549,9 +549,10 @@ async function fetchContributionCalendar(
   const recent: ActivityItem[] = [];
   for (const block of collection?.commitContributionsByRepository ?? []) {
     const repo = block.repository.nameWithOwner;
-    for (const node of block.contributions.nodes) {
+    for (const [i, node] of block.contributions.nodes.entries()) {
+      // Overview URLs repeat across repos/days — include repo + index for uniqueness.
       recent.push({
-        id: `${node.url}-${node.occurredAt}`,
+        id: `${repo}:${node.occurredAt}:${i}`,
         date: node.occurredAt,
         repo,
         message: `${node.commitCount} commit${node.commitCount === 1 ? "" : "s"}`,

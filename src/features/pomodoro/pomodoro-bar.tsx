@@ -64,8 +64,10 @@ export function PomodoroBar() {
 
   return (
     <div
-      className={`glass-clear flex items-center gap-2 rounded-[var(--radius-pill)] px-2.5 py-1 text-sm transition-colors ${
-        flash ? "bg-[color-mix(in_oklab,var(--accent)_35%,transparent)]" : ""
+      className={`flex items-center gap-2 rounded-full px-2.5 py-1 text-sm shadow-[inset_0_1px_0_0_var(--glass-highlight),inset_0_0_0_1px_var(--glass-border),0_4px_14px_-8px_var(--glass-shadow-sm)] transition-colors ${
+        flash
+          ? "bg-[color-mix(in_oklab,var(--accent)_35%,transparent)]"
+          : "bg-[var(--glass-bg-clear)]"
       }`}
     >
       <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted">
@@ -77,7 +79,7 @@ export function PomodoroBar() {
       <button
         type="button"
         onClick={toggle}
-        className="btn-icon"
+        className="inline-flex size-8 cursor-pointer items-center justify-center rounded-full border-none bg-transparent p-0 text-muted transition-[transform,background,color] duration-[var(--duration-fast)] ease-[var(--ease-spring)] hover:scale-[1.04] hover:bg-[color-mix(in_oklab,#ffffff_10%,transparent)] hover:text-foreground active:scale-[0.94]"
         aria-label={running ? strings.pomodoro.pause : strings.pomodoro.start}
       >
         {running ? (
@@ -89,7 +91,7 @@ export function PomodoroBar() {
       <button
         type="button"
         onClick={reset}
-        className="btn-icon"
+        className="inline-flex size-8 cursor-pointer items-center justify-center rounded-full border-none bg-transparent p-0 text-muted transition-[transform,background,color] duration-[var(--duration-fast)] ease-[var(--ease-spring)] hover:scale-[1.04] hover:bg-[color-mix(in_oklab,#ffffff_10%,transparent)] hover:text-foreground active:scale-[0.94]"
         aria-label={strings.pomodoro.reset}
       >
         <RotateCcw size={14} strokeWidth={2} />

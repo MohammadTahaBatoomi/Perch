@@ -16,10 +16,22 @@ import { useSettings } from "./settings-provider";
 
 export function SettingsDrawer({
   onChooseRepos,
+  open: openControlled,
+  onOpenChange,
+  showTrigger = true,
 }: {
   onChooseRepos: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  showTrigger?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [openUncontrolled, setOpenUncontrolled] = useState(false);
+  const controlled = openControlled !== undefined;
+  const open = controlled ? openControlled : openUncontrolled;
+  const setOpen = (next: boolean) => {
+    if (!controlled) setOpenUncontrolled(next);
+    onOpenChange?.(next);
+  };
   const [mounted, setMounted] = useState(false);
   const { settings, update } = useSettings();
   const [busy, setBusy] = useState(false);
@@ -68,7 +80,7 @@ export function SettingsDrawer({
         {open && (
           <m.div
             key="settings-scrim"
-            className="scrim items-stretch justify-end p-3 sm:p-4"
+            className="fixed inset-0 z-[var(--z-overlay)] flex items-stretch justify-end bg-[var(--scrim)] p-3 sm:p-4"
             role="presentation"
             initial={motionSafe ? { opacity: 0 } : false}
             animate={{ opacity: 1 }}
@@ -100,7 +112,7 @@ export function SettingsDrawer({
                   ref={closeRef}
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="btn-icon"
+                  className="inline-flex size-8 cursor-pointer items-center justify-center rounded-full border-none bg-transparent p-0 text-muted transition-[transform,background,color] duration-[var(--duration-fast)] ease-[var(--ease-spring)] hover:scale-[1.04] hover:bg-[color-mix(in_oklab,#ffffff_10%,transparent)] hover:text-foreground active:scale-[0.94]"
                   aria-label={strings.chrome.closeSettings}
                 >
                   <X size={16} strokeWidth={2} />
@@ -118,6 +130,16 @@ export function SettingsDrawer({
                   checked={settings.showTimer}
                   onChange={(v) => update({ showTimer: v })}
                 />
+                <Toggle
+                  label={strings.chrome.hideHeader}
+                  checked={settings.hideHeader}
+                  onChange={(v) => update({ hideHeader: v })}
+                />
+                <Toggle
+                  label={strings.chrome.hideFooter}
+                  checked={settings.hideFooter}
+                  onChange={(v) => update({ hideFooter: v })}
+                />
 
                 <fieldset className="space-y-2 border-0 p-0">
                   <legend className="mb-2 text-[10px] font-medium uppercase tracking-[0.14em] text-muted">
@@ -129,7 +151,7 @@ export function SettingsDrawer({
                         key={s.id}
                         type="button"
                         onClick={() => update({ clockStyle: s.id })}
-                        className="list-row"
+                        className="flex w-full cursor-pointer items-center justify-between rounded-[var(--radius-md)] border-none bg-transparent px-[0.6rem] py-2 text-start text-[length:var(--text-body)] text-foreground/88 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-[color-mix(in_oklab,#ffffff_6%,transparent)] data-[active=true]:bg-[color-mix(in_oklab,#ffffff_11%,transparent)] data-[active=true]:text-foreground data-[active=true]:shadow-[inset_0_0_0_1px_var(--glass-border)]"
                         data-active={settings.clockStyle === s.id}
                         aria-pressed={settings.clockStyle === s.id}
                       >
@@ -143,7 +165,7 @@ export function SettingsDrawer({
                   <legend className="mb-2 text-[10px] font-medium uppercase tracking-[0.14em] text-muted">
                     {strings.clock.timeFormat}
                   </legend>
-                  <div className="nav-pill w-full justify-between">
+                  <div className="relative inline-flex w-full items-center justify-between gap-[0.15rem] rounded-full bg-[color-mix(in_oklab,#000000_28%,transparent)] p-[0.15rem] shadow-[inset_0_0_0_1px_var(--glass-border)]">
                     {(
                       [
                         ["system", strings.clock.system],
@@ -154,7 +176,7 @@ export function SettingsDrawer({
                       <button
                         key={id}
                         type="button"
-                        className="nav-pill__item flex-1 border-0 bg-transparent"
+                        className="relative z-1 flex-1 cursor-pointer rounded-full border-0 bg-transparent px-[0.7rem] py-[0.3rem] text-[0.6875rem] font-medium text-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:text-foreground data-[active=true]:font-semibold data-[active=true]:text-foreground"
                         data-active={settings.hour12 === id}
                         aria-pressed={settings.hour12 === id}
                         onClick={() => update({ hour12: id })}
@@ -169,7 +191,7 @@ export function SettingsDrawer({
                   <legend className="mb-2 text-[10px] font-medium uppercase tracking-[0.14em] text-muted">
                     {strings.night.label}
                   </legend>
-                  <div className="nav-pill w-full justify-between">
+                  <div className="relative inline-flex w-full items-center justify-between gap-[0.15rem] rounded-full bg-[color-mix(in_oklab,#000000_28%,transparent)] p-[0.15rem] shadow-[inset_0_0_0_1px_var(--glass-border)]">
                     {(
                       [
                         ["off", strings.night.off],
@@ -180,7 +202,7 @@ export function SettingsDrawer({
                       <button
                         key={id}
                         type="button"
-                        className="nav-pill__item flex-1 border-0 bg-transparent"
+                        className="relative z-1 flex-1 cursor-pointer rounded-full border-0 bg-transparent px-[0.7rem] py-[0.3rem] text-[0.6875rem] font-medium text-muted transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:text-foreground data-[active=true]:font-semibold data-[active=true]:text-foreground"
                         data-active={settings.nightMode === id}
                         aria-pressed={settings.nightMode === id}
                         onClick={() => update({ nightMode: id })}
@@ -203,7 +225,7 @@ export function SettingsDrawer({
                               nightStartHour: clampHour(Number(e.target.value)),
                             })
                           }
-                          className="field mt-1"
+                          className="mt-1 w-full rounded-[var(--radius-md)] border-none bg-[color-mix(in_oklab,#000000_40%,transparent)] px-3 py-[0.55rem] text-[length:var(--text-body)] text-foreground shadow-[inset_0_1px_2px_rgb(0_0_0/0.35),inset_0_0_0_1px_var(--glass-border)] outline-none transition-[box-shadow,background] duration-[var(--duration-fast)] ease-[var(--ease-out)] placeholder:text-muted-strong focus:bg-[color-mix(in_oklab,#000000_28%,transparent)] focus:shadow-[inset_0_1px_2px_rgb(0_0_0/0.3),inset_0_0_0_1px_color-mix(in_oklab,var(--accent)_45%,transparent),0_0_0_3px_color-mix(in_oklab,var(--accent)_22%,transparent)]"
                         />
                       </label>
                       <label className="text-xs text-muted">
@@ -218,7 +240,7 @@ export function SettingsDrawer({
                               nightEndHour: clampHour(Number(e.target.value)),
                             })
                           }
-                          className="field mt-1"
+                          className="mt-1 w-full rounded-[var(--radius-md)] border-none bg-[color-mix(in_oklab,#000000_40%,transparent)] px-3 py-[0.55rem] text-[length:var(--text-body)] text-foreground shadow-[inset_0_1px_2px_rgb(0_0_0/0.35),inset_0_0_0_1px_var(--glass-border)] outline-none transition-[box-shadow,background] duration-[var(--duration-fast)] ease-[var(--ease-out)] placeholder:text-muted-strong focus:bg-[color-mix(in_oklab,#000000_28%,transparent)] focus:shadow-[inset_0_1px_2px_rgb(0_0_0/0.3),inset_0_0_0_1px_color-mix(in_oklab,var(--accent)_45%,transparent),0_0_0_3px_color-mix(in_oklab,var(--accent)_22%,transparent)]"
                         />
                       </label>
                     </div>
@@ -251,7 +273,7 @@ export function SettingsDrawer({
 
                 <button
                   type="button"
-                  className="btn btn-secondary w-full justify-start rounded-md"
+                  className="inline-flex w-full cursor-pointer items-center justify-start gap-1.5 rounded-md border-none bg-[var(--glass-bg)] px-[1.05rem] py-2 text-[length:var(--text-body)] font-semibold leading-tight tracking-[-0.01em] text-foreground shadow-[inset_0_1px_0_0_var(--glass-highlight),inset_0_0_0_1px_var(--glass-border),0_4px_14px_-6px_var(--glass-shadow-sm)]"
                   onClick={() => {
                     setOpen(false);
                     onChooseRepos();
@@ -264,7 +286,7 @@ export function SettingsDrawer({
                   type="button"
                   disabled={busy}
                   onClick={() => void disconnect()}
-                  className="btn btn-danger w-full justify-start rounded-md"
+                  className="inline-flex w-full cursor-pointer items-center justify-start gap-1.5 rounded-md border-none bg-[color-mix(in_oklab,var(--danger)_10%,transparent)] px-[1.05rem] py-2 text-[length:var(--text-body)] font-semibold leading-tight text-danger shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--danger)_35%,transparent)] transition-[transform,background] duration-[var(--duration-fast)] ease-[var(--ease-spring)] hover:bg-[color-mix(in_oklab,var(--danger)_18%,transparent)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45 disabled:transform-none"
                 >
                   {strings.settings.disconnect}
                 </button>
@@ -278,16 +300,18 @@ export function SettingsDrawer({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="btn-icon"
-        aria-label={strings.chrome.settings}
-        aria-expanded={open}
-        aria-haspopup="dialog"
-      >
-        <Settings size={16} strokeWidth={2} />
-      </button>
+      {showTrigger && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="inline-flex size-8 cursor-pointer items-center justify-center rounded-full border-none bg-transparent p-0 text-muted transition-[transform,background,color] duration-[var(--duration-fast)] ease-[var(--ease-spring)] hover:scale-[1.04] hover:bg-[color-mix(in_oklab,#ffffff_10%,transparent)] hover:text-foreground active:scale-[0.94]"
+          aria-label={strings.chrome.settings}
+          aria-expanded={open}
+          aria-haspopup="dialog"
+        >
+          <Settings size={16} strokeWidth={2} />
+        </button>
+      )}
       {panel}
     </>
   );
@@ -317,10 +341,10 @@ function Toggle({
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className="switch"
+        className="relative h-[1.55rem] w-[2.75rem] cursor-pointer rounded-full border-none bg-[color-mix(in_oklab,#ffffff_14%,transparent)] p-0 shadow-[inset_0_1px_2px_rgb(0_0_0/0.35),inset_0_0_0_1px_var(--glass-border)] transition-colors duration-[var(--duration-med)] ease-[var(--ease-spring)] aria-checked:bg-[color-mix(in_oklab,var(--accent)_85%,white)] aria-checked:shadow-[inset_0_1px_0_0_color-mix(in_oklab,#ffffff_35%,transparent),inset_0_0_0_1px_color-mix(in_oklab,var(--accent)_35%,transparent),0_4px_12px_-4px_color-mix(in_oklab,var(--accent)_35%,transparent)]"
       >
         <m.span
-          className="switch__thumb"
+          className="absolute top-[0.15rem] start-[0.15rem] size-5 rounded-full bg-white shadow-[0_2px_6px_rgb(0_0_0/0.35),inset_0_1px_0_rgb(255_255_255/0.8)]"
           initial={false}
           animate={{ x: checked ? 19.2 : 0 }}
           transition={motionSafe ? switchSpring : { duration: 0 }}

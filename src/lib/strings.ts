@@ -26,6 +26,8 @@ export const strings = {
     exitFullscreen: "Exit fullscreen",
     settings: "Settings",
     closeSettings: "Close settings",
+    hideHeader: "Hide header",
+    hideFooter: "Hide footer",
   },
   footer: {
     repo: "Perch",

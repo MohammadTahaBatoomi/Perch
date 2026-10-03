@@ -181,12 +181,15 @@ function ConnectFlow({ onConnected }: { onConnected: () => void }) {
         <p className="text-center text-sm text-muted">
           {strings.github.connectHint}
         </p>
-        <a href="/api/github/oauth/start" className="btn-accent">
+        <a
+          href="/api/github/oauth/start"
+          className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full border-none bg-[color-mix(in_oklab,var(--accent)_88%,white)] px-[1.05rem] py-2 text-[length:var(--text-body)] font-semibold leading-tight tracking-[-0.01em] text-accent-fg no-underline shadow-[inset_0_1px_0_0_color-mix(in_oklab,#ffffff_40%,transparent),inset_0_0_0_1px_color-mix(in_oklab,var(--accent)_35%,transparent),0_6px_18px_-8px_color-mix(in_oklab,var(--accent)_35%,transparent)] transition-[transform,filter,box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-spring)] hover:scale-[1.02] hover:brightness-[1.08] active:scale-[0.97]"
+        >
           {strings.github.connectAuthorize}
         </a>
         <button
           type="button"
-          className="btn-ghost text-xs underline"
+          className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full border-none bg-transparent px-3 py-[0.4rem] text-xs font-medium leading-tight text-muted underline shadow-none transition-[transform,background,color] duration-[var(--duration-fast)] ease-[var(--ease-spring)] hover:bg-[color-mix(in_oklab,#ffffff_8%,transparent)] hover:text-foreground active:scale-[0.97]"
           onClick={() => void startDevice()}
         >
           {strings.github.useDeviceCode}
@@ -203,7 +206,7 @@ function ConnectFlow({ onConnected }: { onConnected: () => void }) {
         </p>
         <button
           type="button"
-          className="btn-accent"
+          className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full border-none bg-[color-mix(in_oklab,var(--accent)_88%,white)] px-[1.05rem] py-2 text-[length:var(--text-body)] font-semibold leading-tight tracking-[-0.01em] text-accent-fg shadow-[inset_0_1px_0_0_color-mix(in_oklab,#ffffff_40%,transparent),inset_0_0_0_1px_color-mix(in_oklab,var(--accent)_35%,transparent),0_6px_18px_-8px_color-mix(in_oklab,var(--accent)_35%,transparent)] transition-[transform,filter,box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-spring)] hover:scale-[1.02] hover:brightness-[1.08] active:scale-[0.97]"
           onClick={() => {
             setMode("choose");
             setPhase("idle");
@@ -310,7 +313,7 @@ export function RepoSelectSheet({
       {open ? (
         <m.div
           key="repo-scrim"
-          className="scrim items-center justify-center p-4"
+          className="fixed inset-0 z-[var(--z-overlay)] flex items-center justify-center bg-[var(--scrim)] p-4"
           role="presentation"
           initial={reducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -346,7 +349,7 @@ export function RepoSelectSheet({
               </h2>
               <button
                 type="button"
-                className="btn-ghost px-2 py-1 text-xs"
+                className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full border-none bg-transparent px-2 py-1 text-xs font-medium leading-tight text-muted shadow-none transition-[transform,background,color] duration-[var(--duration-fast)] ease-[var(--ease-spring)] hover:bg-[color-mix(in_oklab,#ffffff_8%,transparent)] hover:text-foreground active:scale-[0.97]"
                 onClick={onClose}
               >
                 {strings.github.done}
@@ -358,7 +361,7 @@ export function RepoSelectSheet({
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder={strings.github.search}
-                className="field"
+                className="w-full rounded-[var(--radius-md)] border-none bg-[color-mix(in_oklab,#000000_40%,transparent)] px-3 py-[0.55rem] text-[length:var(--text-body)] text-foreground shadow-[inset_0_1px_2px_rgb(0_0_0/0.35),inset_0_0_0_1px_var(--glass-border)] outline-none transition-[box-shadow,background] duration-[var(--duration-fast)] ease-[var(--ease-out)] placeholder:text-muted-strong focus:bg-[color-mix(in_oklab,#000000_28%,transparent)] focus:shadow-[inset_0_1px_2px_rgb(0_0_0/0.3),inset_0_0_0_1px_color-mix(in_oklab,var(--accent)_45%,transparent),0_0_0_3px_color-mix(in_oklab,var(--accent)_22%,transparent)]"
                 aria-label={strings.github.searchAria}
               />
             </div>
@@ -379,7 +382,7 @@ export function RepoSelectSheet({
                     type="button"
                     onClick={() => toggle(r.full_name)}
                     data-active={on}
-                    className="list-row mb-1"
+                    className="mb-1 flex w-full cursor-pointer items-center justify-between rounded-[var(--radius-md)] border-none bg-transparent px-[0.6rem] py-2 text-start text-[length:var(--text-body)] text-foreground/88 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-[color-mix(in_oklab,#ffffff_6%,transparent)] data-[active=true]:bg-[color-mix(in_oklab,#ffffff_11%,transparent)] data-[active=true]:text-foreground data-[active=true]:shadow-[inset_0_0_0_1px_var(--glass-border)]"
                   >
                     <span className="truncate">{r.full_name}</span>
                     <span className="ms-2 shrink-0 text-[10px] text-muted">
@@ -454,7 +457,7 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
   if (meLoading) {
     return (
       <section className="card flex h-full items-center justify-center p-4">
-        <div className="skeleton h-20 w-full" />
+        <div className="h-20 w-full animate-shimmer rounded-[var(--radius-md)] bg-[linear-gradient(90deg,color-mix(in_oklab,#ffffff_5%,transparent)_0%,color-mix(in_oklab,#ffffff_10%,transparent)_50%,color-mix(in_oklab,#ffffff_5%,transparent)_100%)] bg-size-[200%_100%] shadow-[inset_0_0_0_1px_var(--glass-border)] motion-reduce:animate-none" />
       </section>
     );
   }
@@ -468,31 +471,33 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
   }
 
   return (
-    <section className="card gh-card flex h-full min-h-0 flex-col overflow-hidden">
-      <header className="gh-card__header">
+    <section className="card flex h-full min-h-0 flex-col overflow-hidden">
+      <header className="flex shrink-0 items-center gap-[0.55rem] border-b border-[color-mix(in_oklab,#ffffff_8%,transparent)] px-[0.85rem] py-[0.55rem]">
         <Link
           href={`https://github.com/${me.login}`}
           target="_blank"
           rel="noreferrer"
-          className="gh-card__profile"
+          className="group flex min-w-0 flex-1 items-center gap-[0.55rem] rounded-[var(--radius-sm)] no-underline outline-none transition-opacity duration-[var(--duration-fast)] ease-[var(--ease-out)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]"
           title={`@${me.login} on GitHub`}
         >
           <Image
             src={me.avatar_url}
             alt=""
-            className="gh-card__avatar"
+            className="size-[1.4rem] shrink-0 rounded-full object-cover shadow-[0_0_0_1px_color-mix(in_oklab,#ffffff_16%,transparent),0_0_0_3px_color-mix(in_oklab,#ffffff_4%,transparent)] transition-[box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-out)] group-hover:shadow-[0_0_0_1px_color-mix(in_oklab,var(--accent)_45%,transparent),0_0_0_3px_color-mix(in_oklab,var(--accent)_12%,transparent)]"
             width={24}
             height={24}
           />
-          <span className="gh-card__login">{me.login}</span>
+          <span className="min-w-0 truncate text-[0.8125rem] font-semibold tracking-[var(--tracking-tight)] text-foreground underline-offset-[0.18em] transition-[color,text-decoration-color] duration-[var(--duration-fast)] ease-[var(--ease-out)] group-hover:text-accent group-hover:underline group-hover:decoration-[color-mix(in_oklab,var(--accent)_50%,transparent)]">
+            {me.login}
+          </span>
         </Link>
         <button
           type="button"
           onClick={onOpenRepos}
-          className="btn-ghost gh-card__repos-btn"
+          className="ms-auto inline-flex cursor-pointer items-center gap-[0.35rem] rounded-full border-none bg-transparent px-[0.45rem] py-[0.2rem] text-[0.625rem] font-[550] uppercase tracking-[0.04em] text-muted transition-[transform,background,color] duration-[var(--duration-fast)] ease-[var(--ease-spring)] hover:bg-[color-mix(in_oklab,#ffffff_8%,transparent)] hover:text-foreground active:scale-[0.97]"
         >
           {strings.github.repos}
-          <span className="gh-card__repos-count">
+          <span className="inline-flex min-w-[1.1rem] items-center justify-center rounded-[var(--radius-sm)] bg-[color-mix(in_oklab,#ffffff_8%,transparent)] px-[0.3rem] py-[0.05rem] text-[0.625rem] font-[650] normal-case tracking-normal text-foreground/78 tabular-nums shadow-[inset_0_0_0_1px_color-mix(in_oklab,#ffffff_8%,transparent)]">
             {settings.selectedRepos.length}
           </span>
         </button>
@@ -501,15 +506,19 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
       {settings.selectedRepos.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-2 p-4">
           <p className="text-sm text-muted">{strings.github.noRepos}</p>
-          <button type="button" className="btn-accent" onClick={onOpenRepos}>
+          <button
+            type="button"
+            className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full border-none bg-[color-mix(in_oklab,var(--accent)_88%,white)] px-[1.05rem] py-2 text-[length:var(--text-body)] font-semibold leading-tight tracking-[-0.01em] text-accent-fg shadow-[inset_0_1px_0_0_color-mix(in_oklab,#ffffff_40%,transparent),inset_0_0_0_1px_color-mix(in_oklab,var(--accent)_35%,transparent),0_6px_18px_-8px_color-mix(in_oklab,var(--accent)_35%,transparent)] transition-[transform,filter,box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-spring)] hover:scale-[1.02] hover:brightness-[1.08] active:scale-[0.97]"
+            onClick={onOpenRepos}
+          >
             {strings.github.chooseReposCta}
           </button>
         </div>
       ) : (
         <div className="grid min-h-0 flex-1 grid-rows-2">
-          <div className="gh-repo-list">
+          <div className="min-h-0 overflow-auto border-b border-[color-mix(in_oklab,#ffffff_8%,transparent)] px-[0.4rem] py-[0.35rem]">
             {statusLoading && !statusData && (
-              <div className="skeleton m-1 h-12" />
+              <div className="m-1 h-12 animate-shimmer rounded-[var(--radius-md)] bg-[linear-gradient(90deg,color-mix(in_oklab,#ffffff_5%,transparent)_0%,color-mix(in_oklab,#ffffff_10%,transparent)_50%,color-mix(in_oklab,#ffffff_5%,transparent)_100%)] bg-size-[200%_100%] shadow-[inset_0_0_0_1px_var(--glass-border)] motion-reduce:animate-none" />
             )}
             {statusData?.repos.map((r) => {
               const name = r.full_name.split("/")[1] ?? r.full_name;
@@ -517,13 +526,18 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
               const hasIssues = r.open_issues > 0;
               const ci = ciColor(r.ci_status, r.ci_conclusion);
               return (
-                <div key={r.full_name} className="gh-repo-row">
+                <div
+                  key={r.full_name}
+                  className="flex items-center gap-[0.6rem] rounded-[var(--radius-sm)] px-[0.55rem] py-2 transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-[color-mix(in_oklab,#ffffff_4.5%,transparent)] shadow-[inset_0_1px_0_0_color-mix(in_oklab,#ffffff_5%,transparent)] first:shadow-none"
+                >
                   <span
-                    className="gh-repo-row__ci"
+                    className="size-[0.42rem] shrink-0 rounded-full"
                     style={
                       {
                         "--gh-ci": ci,
                         background: ci,
+                        boxShadow:
+                          "0 0 0 1px color-mix(in oklab, var(--gh-ci, #71717a) 35%, transparent), 0 0 8px color-mix(in oklab, var(--gh-ci, transparent) 45%, transparent)",
                       } as CSSProperties
                     }
                     title={
@@ -534,14 +548,17 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
                     href={`https://github.com/${r.full_name}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="gh-repo-row__name"
+                    className="min-w-0 flex-1 truncate text-[0.8125rem] font-[550] tracking-[var(--tracking-tight)] text-foreground/92 no-underline underline-offset-[0.2em] transition-[color,text-decoration-color] duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:text-accent hover:underline hover:decoration-[color-mix(in_oklab,var(--accent)_50%,transparent)] focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]"
                     title={r.full_name}
                   >
                     {name}
                   </Link>
-                  <div className="gh-repo-row__meta" aria-label="Repository stats">
+                  <div
+                    className="flex shrink-0 items-center gap-[0.4rem] font-mono"
+                    aria-label="Repository stats"
+                  >
                     <span
-                      className="gh-repo-stat"
+                      className="inline-flex items-center gap-[0.22rem] leading-none tabular-nums data-[tone=star]:text-[#e8c468] data-[tone=issue]:text-danger data-[tone=idle]:text-muted/68"
                       data-tone={hasStars ? "star" : "idle"}
                       title={`${r.stars} stars`}
                     >
@@ -551,21 +568,29 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
                         fill={hasStars ? "currentColor" : "none"}
                         aria-hidden
                       />
-                      <span className="gh-repo-stat__value">{r.stars}</span>
+                      <span className="text-[0.6875rem] font-[550] tracking-[-0.01em]">
+                        {r.stars}
+                      </span>
                     </span>
-                    <span className="gh-repo-row__sep" aria-hidden />
                     <span
-                      className="gh-repo-stat"
+                      className="h-[0.7rem] w-px bg-[color-mix(in_oklab,#ffffff_10%,transparent)]"
+                      aria-hidden
+                    />
+                    <span
+                      className="inline-flex items-center gap-[0.22rem] leading-none tabular-nums data-[tone=star]:text-[#e8c468] data-[tone=issue]:text-danger data-[tone=idle]:text-muted/68"
                       data-tone={hasIssues ? "issue" : "idle"}
                       title={`${r.open_issues} open issues`}
                     >
                       <CircleAlert size={11} strokeWidth={1.75} aria-hidden />
-                      <span className="gh-repo-stat__value">
+                      <span className="text-[0.6875rem] font-[550] tracking-[-0.01em]">
                         {r.open_issues}
                       </span>
                     </span>
-                    <span className="gh-repo-row__sep" aria-hidden />
-                    <span className="gh-repo-row__time">
+                    <span
+                      className="h-[0.7rem] w-px bg-[color-mix(in_oklab,#ffffff_10%,transparent)]"
+                      aria-hidden
+                    />
+                    <span className="min-w-[1.85rem] text-end text-[0.625rem] font-medium tracking-[0.01em] text-muted/62 tabular-nums">
                       {r.pushed_at ? relativeTime(r.pushed_at) : "—"}
                     </span>
                   </div>
@@ -575,7 +600,7 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
           </div>
           <div className="min-h-0 overflow-auto px-2 py-1">
             {commitsLoading && !commitsData && (
-              <div className="skeleton m-1 h-12" />
+              <div className="m-1 h-12 animate-shimmer rounded-[var(--radius-md)] bg-[linear-gradient(90deg,color-mix(in_oklab,#ffffff_5%,transparent)_0%,color-mix(in_oklab,#ffffff_10%,transparent)_50%,color-mix(in_oklab,#ffffff_5%,transparent)_100%)] bg-size-[200%_100%] shadow-[inset_0_0_0_1px_var(--glass-border)] motion-reduce:animate-none" />
             )}
             {!commitsLoading && commitsData?.commits.length === 0 && (
               <p className="p-2 text-xs text-muted">{strings.github.noCommits}</p>

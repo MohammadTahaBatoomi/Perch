@@ -4,10 +4,7 @@ import { encode } from "uqr";
 import type { ReactElement } from "react";
 import { strings } from "@/lib/strings";
 
-/**
- * QR always renders on a solid high-contrast host (.qr-surface).
- * Never place this on a glass / translucent panel without the wrapper.
- */
+/** QR on a solid high-contrast host — never place on translucent glass alone. */
 export function QrSvg({ value, size = 96 }: { value: string; size?: number }) {
   const { size: n, data } = encode(value, { ecc: "L", border: 1 });
   const cells: ReactElement[] = [];
@@ -22,7 +19,7 @@ export function QrSvg({ value, size = 96 }: { value: string; size?: number }) {
     }
   }
   return (
-    <div className="qr-surface">
+    <div className="inline-flex shrink-0 rounded-[var(--radius-sm)] bg-white p-[0.35rem] shadow-[inset_0_0_0_1px_#e4e4e7]">
       <svg
         width={size}
         height={size}

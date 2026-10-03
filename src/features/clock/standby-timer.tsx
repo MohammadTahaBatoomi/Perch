@@ -95,7 +95,7 @@ export function StandbyTimer() {
       <div className="standby-timer__controls">
         <button
           type="button"
-          className="btn-secondary standby-timer__btn"
+          className="standby-timer__btn inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full border-none bg-[var(--glass-bg)] px-[1.05rem] py-2 text-[length:var(--text-body)] font-semibold leading-tight tracking-[-0.01em] text-foreground shadow-[inset_0_1px_0_0_var(--glass-highlight),inset_0_0_0_1px_var(--glass-border),0_4px_14px_-6px_var(--glass-shadow-sm)]"
           onClick={toggle}
           aria-label={
             running ? strings.clock.pauseTimer : strings.clock.startTimer
@@ -109,7 +109,7 @@ export function StandbyTimer() {
         </button>
         <button
           type="button"
-          className="btn-secondary standby-timer__btn"
+          className="standby-timer__btn inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full border-none bg-[var(--glass-bg)] px-[1.05rem] py-2 text-[length:var(--text-body)] font-semibold leading-tight tracking-[-0.01em] text-foreground shadow-[inset_0_1px_0_0_var(--glass-highlight),inset_0_0_0_1px_var(--glass-border),0_4px_14px_-6px_var(--glass-shadow-sm)]"
           onClick={reset}
           aria-label={strings.clock.resetTimer}
         >

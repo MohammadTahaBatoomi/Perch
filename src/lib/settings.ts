@@ -29,6 +29,8 @@ export const SettingsSchema = z.object({
   clockStyle: z.enum(["glass", "solid", "analog"]).default("glass"),
   hour12: z.enum(["system", "12", "24"]).default("system"),
   showTimer: z.boolean().default(false),
+  hideHeader: z.boolean().default(false),
+  hideFooter: z.boolean().default(false),
   accent: z
     .enum(["cyan", "green", "amber", "rose", "blue"])
     .default("cyan"),
@@ -47,6 +49,8 @@ export const DEFAULT_SETTINGS: Settings = {
   clockStyle: "glass",
   hour12: "system",
   showTimer: false,
+  hideHeader: false,
+  hideFooter: false,
   accent: "cyan",
   selectedRepos: [],
 };

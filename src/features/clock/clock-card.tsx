@@ -64,7 +64,7 @@ export function ClockCard() {
   if (!now) {
     return (
       <section className="standby-hero">
-        <div className="skeleton standby-hero__skeleton" />
+        <div className="standby-hero__skeleton animate-shimmer bg-[linear-gradient(90deg,color-mix(in_oklab,#ffffff_5%,transparent)_0%,color-mix(in_oklab,#ffffff_10%,transparent)_50%,color-mix(in_oklab,#ffffff_5%,transparent)_100%)] bg-size-[200%_100%] shadow-[inset_0_0_0_1px_var(--glass-border)] motion-reduce:animate-none" />
       </section>
     );
   }

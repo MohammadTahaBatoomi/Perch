@@ -106,7 +106,9 @@ function ActivityStatus({
   empty?: boolean;
 }) {
   if (isLoading) {
-    return <div className="card skeleton h-full w-full" />;
+    return (
+      <div className="card h-full w-full animate-shimmer bg-[linear-gradient(90deg,color-mix(in_oklab,#ffffff_5%,transparent)_0%,color-mix(in_oklab,#ffffff_10%,transparent)_50%,color-mix(in_oklab,#ffffff_5%,transparent)_100%)] bg-size-[200%_100%] motion-reduce:animate-none" />
+    );
   }
 
   if (error) {
@@ -120,7 +122,10 @@ function ActivityStatus({
             : error.message || strings.activity.couldNotLoad}
         </p>
         {unauthorized && (
-          <Link href="/" className="btn-accent text-xs">
+          <Link
+            href="/"
+            className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-full border-none bg-[color-mix(in_oklab,var(--accent)_88%,white)] px-[1.05rem] py-2 text-xs font-semibold leading-tight tracking-[-0.01em] text-accent-fg no-underline shadow-[inset_0_1px_0_0_color-mix(in_oklab,#ffffff_40%,transparent),inset_0_0_0_1px_color-mix(in_oklab,var(--accent)_35%,transparent),0_6px_18px_-8px_color-mix(in_oklab,var(--accent)_35%,transparent)] transition-[transform,filter,box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-spring)] hover:scale-[1.02] hover:brightness-[1.08] active:scale-[0.97]"
+          >
             {strings.activity.goHome}
           </Link>
         )}
@@ -169,14 +174,14 @@ export function ActivityHeatmap() {
   const months = monthLabels(weeks);
 
   return (
-    <section className="activity-panel card flex h-full min-h-0 flex-col overflow-hidden p-2.5 sm:p-3 md:p-5 lg:p-6">
-      <header className="activity-panel__header shrink-0">
-        <h1 className="activity-panel__title">
+    <section className="card flex h-full min-h-0 flex-col justify-start gap-[0.45rem] overflow-hidden p-2.5 sm:p-3 md:p-5 lg:p-6 min-[700px]:justify-center min-[700px]:gap-4">
+      <header className="shrink-0 px-[0.1rem] min-[700px]:px-[0.35rem]">
+        <h1 className="m-0 text-[clamp(0.78rem,2.2vw+0.4rem,1rem)] font-semibold leading-snug tracking-[-0.02em] text-foreground min-[700px]:text-[clamp(0.9rem,1.4cqi+0.5rem,1.2rem)] min-[700px]:leading-tight">
           {total.toLocaleString("en-US")} contributions in the last year
         </h1>
       </header>
 
-      <div className="activity-panel__graph">
+      <div className="min-h-0 w-full flex-[0_1_auto] overflow-x-auto overflow-y-hidden overscroll-x-contain [-webkit-overflow-scrolling:touch] min-[700px]:overflow-visible min-[700px]:px-1 min-[700px]:py-[0.35rem]">
         <svg
           viewBox={`0 0 ${width} ${height}`}
           className="activity-heatmap"
@@ -234,20 +239,20 @@ export function ActivityHeatmap() {
         </svg>
       </div>
 
-      <footer className="activity-panel__footer shrink-0">
-        <span className="activity-panel__legend-label">
+      <footer className="mt-auto hidden shrink-0 flex-nowrap items-center justify-end gap-[0.3rem] whitespace-nowrap px-[0.1rem] min-[700px]:mt-0 min-[700px]:flex min-[700px]:gap-[0.35rem] min-[700px]:px-[0.35rem] min-[700px]:pt-[0.15rem] max-[520px]:!hidden">
+        <span className="text-[10px] leading-none text-foreground/55 min-[700px]:text-[11px]">
           {strings.activity.less}
         </span>
-        <span className="activity-panel__legend">
+        <span className="inline-flex shrink-0 items-center gap-[3px]">
           {[0, 1, 2, 3, 4].map((level) => (
             <span
               key={level}
-              className="activity-panel__swatch"
+              className="inline-block size-2.5 rounded-sm shadow-[inset_0_0_0_1px_color-mix(in_oklab,#ffffff_8%,transparent)] min-[700px]:size-[11px]"
               style={{ background: `var(--contrib-${level})` }}
             />
           ))}
         </span>
-        <span className="activity-panel__legend-label">
+        <span className="text-[10px] leading-none text-foreground/55 min-[700px]:text-[11px]">
           {strings.activity.more}
         </span>
       </footer>
@@ -263,14 +268,14 @@ export function ActivityRecent() {
   if (isLoading || error || !data) return status;
 
   return (
-    <section className="activity-recent card flex h-full min-h-0 flex-col overflow-hidden p-3">
-      <h2 className="activity-recent__title shrink-0">
+    <section className="card flex h-full min-h-0 flex-col overflow-hidden p-3">
+      <h2 className="m-0 shrink-0 text-[0.8rem] font-semibold tracking-[-0.01em] text-foreground/88">
         {strings.activity.recent}
       </h2>
       {data.recent.length === 0 ? (
         <p className="mt-3 text-sm text-muted">{strings.activity.noEvents}</p>
       ) : (
-        <ul className="activity-recent__list mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain">
+        <ul className="mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain">
           {data.recent.map((item) => {
             const body = (
               <>
