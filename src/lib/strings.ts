@@ -27,6 +27,12 @@ export const strings = {
     settings: "Settings",
     closeSettings: "Close settings",
   },
+  footer: {
+    repo: "Perch",
+    site: "CipherUnit",
+    github: "GitHub",
+    credit: "© 2026 CipherUnit ❤️‍🔥 Made for developers by CipherUnit",
+  },
   clock: {
     label: "Clock",
     styles: {

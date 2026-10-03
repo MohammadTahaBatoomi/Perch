@@ -930,8 +930,73 @@ body {
   z-index: var(--z-content);
   min-block-size: 0;
   flex: 1;
-  padding-block: 0.45rem 0.55rem;
+  padding-block: 0.45rem 0.35rem;
   padding-inline: 0.55rem;
+}
+
+.shell__footer {
+  position: relative;
+  z-index: var(--z-content);
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+  margin-block-start: 0.45rem;
+  margin-block-end: 0.35rem;
+  margin-inline: 0.55rem;
+  padding-block: 0.35rem 0.4rem;
+  padding-inline: 0.55rem;
+  border-top: 1px solid color-mix(in oklab, #ffffff 7%, transparent);
+}
+
+.shell__footer-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.shell__footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  font-size: 0.625rem;
+  font-weight: 550;
+  letter-spacing: 0.02em;
+  color: color-mix(in oklab, var(--muted) 88%, transparent);
+  text-decoration: none;
+  text-underline-offset: 0.16em;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.shell__footer-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--accent) 45%, transparent);
+}
+
+.shell__footer-link:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.shell__footer-dot {
+  inline-size: 3px;
+  block-size: 3px;
+  border-radius: 9999px;
+  background: color-mix(in oklab, #ffffff 18%, transparent);
+}
+
+.shell__footer-credit {
+  margin: 0;
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: color-mix(in oklab, var(--muted) 72%, transparent);
+  text-wrap: balance;
 }
 
 .brand {
@@ -969,6 +1034,219 @@ body {
   background: color-mix(in oklab, #ffffff 11%, transparent);
   color: var(--foreground);
   box-shadow: inset 0 0 0 1px var(--glass-border);
+}
+
+/* GitHub card — header + per-repo status */
+.gh-card__header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.55rem;
+  border-bottom: 1px solid color-mix(in oklab, #ffffff 8%, transparent);
+  padding-block: 0.55rem;
+  padding-inline: 0.85rem;
+}
+
+.gh-card__profile {
+  display: flex;
+  min-inline-size: 0;
+  flex: 1;
+  align-items: center;
+  gap: 0.55rem;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.gh-card__profile:hover .gh-card__login {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--accent) 50%, transparent);
+}
+
+.gh-card__profile:hover .gh-card__avatar {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--accent) 45%, transparent),
+    0 0 0 3px color-mix(in oklab, var(--accent) 12%, transparent);
+}
+
+.gh-card__profile:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.gh-card__avatar {
+  inline-size: 1.4rem;
+  block-size: 1.4rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, #ffffff 16%, transparent),
+    0 0 0 3px color-mix(in oklab, #ffffff 4%, transparent);
+  transition: box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.gh-card__login {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+  color: var(--foreground);
+  text-underline-offset: 0.18em;
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    text-decoration-color var(--duration-fast) var(--ease-out);
+}
+
+.gh-card__repos-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-inline-start: auto;
+  padding-block: 0.2rem;
+  padding-inline: 0.45rem;
+  font-size: 0.625rem;
+  font-weight: 550;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.gh-card__repos-count {
+  display: inline-flex;
+  min-inline-size: 1.1rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  padding-block: 0.05rem;
+  padding-inline: 0.3rem;
+  font-size: 0.625rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  text-transform: none;
+  color: color-mix(in oklab, var(--foreground) 78%, transparent);
+  background: color-mix(in oklab, #ffffff 8%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, #ffffff 8%, transparent);
+}
+
+.gh-repo-list {
+  min-block-size: 0;
+  overflow: auto;
+  border-bottom: 1px solid color-mix(in oklab, #ffffff 8%, transparent);
+  padding-block: 0.35rem;
+  padding-inline: 0.4rem;
+}
+
+.gh-repo-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border-radius: var(--radius-sm);
+  padding-block: 0.5rem;
+  padding-inline: 0.55rem;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.gh-repo-row + .gh-repo-row {
+  box-shadow: inset 0 1px 0 0 color-mix(in oklab, #ffffff 5%, transparent);
+}
+
+.gh-repo-row:hover {
+  background: color-mix(in oklab, #ffffff 4.5%, transparent);
+}
+
+.gh-repo-row__ci {
+  inline-size: 0.42rem;
+  block-size: 0.42rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--gh-ci, #71717a) 35%, transparent),
+    0 0 8px color-mix(in oklab, var(--gh-ci, transparent) 45%, transparent);
+}
+
+.gh-repo-row__name {
+  min-inline-size: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  font-weight: 550;
+  letter-spacing: var(--tracking-tight);
+  color: color-mix(in oklab, var(--foreground) 92%, transparent);
+  text-decoration: none;
+  text-underline-offset: 0.2em;
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    text-decoration-color var(--duration-fast) var(--ease-out);
+}
+
+.gh-repo-row__name:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--accent) 50%, transparent);
+}
+
+.gh-repo-row__name:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.gh-repo-row__meta {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+.gh-repo-row__sep {
+  inline-size: 1px;
+  block-size: 0.7rem;
+  background: color-mix(in oklab, #ffffff 10%, transparent);
+}
+
+.gh-repo-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.gh-repo-stat__value {
+  font-size: 0.6875rem;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+}
+
+.gh-repo-stat[data-tone="star"] {
+  color: #e8c468;
+}
+
+.gh-repo-stat[data-tone="issue"] {
+  color: var(--danger);
+}
+
+.gh-repo-stat[data-tone="idle"] {
+  color: color-mix(in oklab, var(--muted) 68%, transparent);
+}
+
+.gh-repo-row__time {
+  min-inline-size: 1.85rem;
+  text-align: end;
+  font-size: 0.625rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  color: color-mix(in oklab, var(--muted) 62%, transparent);
 }
 
 /* ─────────────────────────────────────────────

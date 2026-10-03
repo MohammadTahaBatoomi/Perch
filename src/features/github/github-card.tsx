@@ -1,10 +1,17 @@
 "use client";
 
 import useSWR from "swr";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, m } from "motion/react";
-import { Github, Loader2, RefreshCw } from "lucide-react";
+import { CircleAlert, Github, Loader2, RefreshCw, Star } from "lucide-react";
 import { relativeTime } from "@/lib/format";
 import { strings } from "@/lib/strings";
 import { snappy, soft, useReducedMotionPref } from "@/features/motion/provider";
@@ -459,25 +466,34 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
   }
 
   return (
-    <section className="card flex h-full min-h-0 flex-col overflow-hidden">
-      <header className="flex shrink-0 items-center gap-2 border-b border-[color-mix(in_oklab,#ffffff_8%,transparent)] px-3 py-2">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={me.avatar_url}
-          alt=""
-          className="h-6 w-6 rounded-full ring-1 ring-[color-mix(in_oklab,#ffffff_18%,transparent)]"
-          width={24}
-          height={24}
-        />
-        <span className="truncate text-sm font-semibold tracking-tight text-foreground">
-          {me.login}
-        </span>
+    <section className="card gh-card flex h-full min-h-0 flex-col overflow-hidden">
+      <header className="gh-card__header">
+        <a
+          href={`https://github.com/${me.login}`}
+          target="_blank"
+          rel="noreferrer"
+          className="gh-card__profile"
+          title={`@${me.login} on GitHub`}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={me.avatar_url}
+            alt=""
+            className="gh-card__avatar"
+            width={24}
+            height={24}
+          />
+          <span className="gh-card__login">{me.login}</span>
+        </a>
         <button
           type="button"
           onClick={onOpenRepos}
-          className="btn-ghost ms-auto px-2 py-1 text-[11px]"
+          className="btn-ghost gh-card__repos-btn"
         >
-          {strings.github.repos} ({settings.selectedRepos.length})
+          {strings.github.repos}
+          <span className="gh-card__repos-count">
+            {settings.selectedRepos.length}
+          </span>
         </button>
       </header>
 
@@ -490,32 +506,71 @@ export function GitHubCard({ onOpenRepos }: { onOpenRepos: () => void }) {
         </div>
       ) : (
         <div className="grid min-h-0 flex-1 grid-rows-2">
-          <div className="min-h-0 overflow-auto border-b border-[color-mix(in_oklab,#ffffff_8%,transparent)] px-2 py-1">
+          <div className="gh-repo-list">
             {statusLoading && !statusData && (
               <div className="skeleton m-1 h-12" />
             )}
-            {statusData?.repos.map((r) => (
-              <div
-                key={r.full_name}
-                className="flex items-center gap-2 py-1.5 text-xs"
-              >
-                <span
-                  className="h-2 w-2 shrink-0 rounded-full"
-                  style={{
-                    background: ciColor(r.ci_status, r.ci_conclusion),
-                  }}
-                  title={r.ci_conclusion ?? r.ci_status ?? strings.github.noCi}
-                />
-                <span className="min-w-0 flex-1 truncate font-medium text-foreground/90">
-                  {r.full_name.split("/")[1]}
-                </span>
-                <span className="shrink-0 text-muted">★{r.stars}</span>
-                <span className="shrink-0 text-muted">!{r.open_issues}</span>
-                <span className="w-8 shrink-0 text-end text-muted/70">
-                  {r.pushed_at ? relativeTime(r.pushed_at) : "—"}
-                </span>
-              </div>
-            ))}
+            {statusData?.repos.map((r) => {
+              const name = r.full_name.split("/")[1] ?? r.full_name;
+              const hasStars = r.stars > 0;
+              const hasIssues = r.open_issues > 0;
+              const ci = ciColor(r.ci_status, r.ci_conclusion);
+              return (
+                <div key={r.full_name} className="gh-repo-row">
+                  <span
+                    className="gh-repo-row__ci"
+                    style={
+                      {
+                        "--gh-ci": ci,
+                        background: ci,
+                      } as CSSProperties
+                    }
+                    title={
+                      r.ci_conclusion ?? r.ci_status ?? strings.github.noCi
+                    }
+                  />
+                  <a
+                    href={`https://github.com/${r.full_name}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="gh-repo-row__name"
+                    title={r.full_name}
+                  >
+                    {name}
+                  </a>
+                  <div className="gh-repo-row__meta" aria-label="Repository stats">
+                    <span
+                      className="gh-repo-stat"
+                      data-tone={hasStars ? "star" : "idle"}
+                      title={`${r.stars} stars`}
+                    >
+                      <Star
+                        size={11}
+                        strokeWidth={hasStars ? 0 : 1.75}
+                        fill={hasStars ? "currentColor" : "none"}
+                        aria-hidden
+                      />
+                      <span className="gh-repo-stat__value">{r.stars}</span>
+                    </span>
+                    <span className="gh-repo-row__sep" aria-hidden />
+                    <span
+                      className="gh-repo-stat"
+                      data-tone={hasIssues ? "issue" : "idle"}
+                      title={`${r.open_issues} open issues`}
+                    >
+                      <CircleAlert size={11} strokeWidth={1.75} aria-hidden />
+                      <span className="gh-repo-stat__value">
+                        {r.open_issues}
+                      </span>
+                    </span>
+                    <span className="gh-repo-row__sep" aria-hidden />
+                    <span className="gh-repo-row__time">
+                      {r.pushed_at ? relativeTime(r.pushed_at) : "—"}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
           <div className="min-h-0 overflow-auto px-2 py-1">
             {commitsLoading && !commitsData && (

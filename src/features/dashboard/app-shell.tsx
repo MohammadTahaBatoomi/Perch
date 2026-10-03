@@ -13,6 +13,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, m } from "motion/react";
 import {
+  Github,
   Maximize2,
   Minimize2,
   Moon,
@@ -21,6 +22,12 @@ import {
   ShieldCheck,
   ShieldOff,
 } from "lucide-react";
+
+const FOOTER = {
+  repo: "https://github.com/MohammadTahaBatoomi/Perch",
+  site: "https://cipherunit.xyz/",
+  github: "https://github.com/MohammadTahaBatoomi",
+} as const;
 import {
   useFullscreen,
   useKeepAwake,
@@ -226,6 +233,39 @@ export function AppShell({ children }: { children: ReactNode }) {
             </m.div>
           </AnimatePresence>
         </main>
+
+        <footer className="shell__footer">
+          <nav className="shell__footer-links" aria-label="Credits">
+            <a
+              href={FOOTER.repo}
+              target="_blank"
+              rel="noreferrer"
+              className="shell__footer-link"
+            >
+              <Github size={11} strokeWidth={2} aria-hidden />
+              {strings.footer.repo}
+            </a>
+            <span className="shell__footer-dot" aria-hidden />
+            <a
+              href={FOOTER.site}
+              target="_blank"
+              rel="noreferrer"
+              className="shell__footer-link"
+            >
+              {strings.footer.site}
+            </a>
+            <span className="shell__footer-dot" aria-hidden />
+            <a
+              href={FOOTER.github}
+              target="_blank"
+              rel="noreferrer"
+              className="shell__footer-link"
+            >
+              {strings.footer.github}
+            </a>
+          </nav>
+          <p className="shell__footer-credit">{strings.footer.credit}</p>
+        </footer>
 
         <RepoSelectSheet open={reposOpen} onClose={() => setReposOpen(false)} />
         <Moon className="sr-only" />
