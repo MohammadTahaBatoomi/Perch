@@ -1,0 +1,22 @@
+# CipherScope Configuration
+# Docs: https://github.com/MohammadTahaBatoomi
+
+[project]
+name = "CipherPortfolio"
+
+[brand]
+enabled = true
+# thin | light | regular | bold | heavy
+style = "heavy"
+
+[info]
+enabled = true
+env = true              # which .env profile is active
+package_manager = true  # npm | pnpm | yarn | bun
+version = true          # from package.json
+
+[developer]
+enabled = true
+name = "MohammadTahaBatoomi"
+website = "https://cipherunit.xyz/"
+github = "https://github.com/MohammadTahaBatoomi"

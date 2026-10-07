@@ -1,17 +1,27 @@
 {
   "name": "perch",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+
+  "author": {
+    "name": "MohammadTahaBatoomi",
+    "email": "tbatoomi@gmail.com",
+    "url": "https://cipherunit.xyz"
+  },
   "scripts": {
-    "dev": "next dev -H 0.0.0.0",
-    "build": "next build",
-    "start": "next start -H 0.0.0.0",
+    "cipherscope": "cipher-scope banner",
+    "dev": "pnpm cipherscope && next dev -H 0.0.0.0",
+    "build": "pnpm cipherscope && next build",
+    "start": "pnpm cipherscope && next start -H 0.0.0.0",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "cap:sync": "cap sync android",
-    "android:sync": "cap sync android"
+    "android:sync": "cap sync android",
+    "check": "pnpm typecheck && pnpm lint",
+    "clean": "rm -rf .next out dist node_modules/.cache"
   },
   "dependencies": {
+    "cipher-scope": "^0.1.0",
     "@capacitor/android": "^8.5.2",
     "@capacitor/core": "^8.5.2",
     "lucide-react": "^0.487.0",

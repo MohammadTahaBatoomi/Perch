@@ -4,17 +4,17 @@ import { MotionProvider } from "@/features/motion/provider";
 import { SettingsProvider } from "@/features/settings/settings-provider";
 import { BootSplash } from "@/features/shell/boot-splash";
 import { strings } from "@/lib/strings";
-import "./globals.css";
+import "./styles/globals.css";
 
 const geistSans = localFont({
-  src: "../fonts/Geist-Regular.woff2",
+  src: "../../public/fonts/Geist-Regular.woff2",
   variable: "--font-sans",
   display: "swap",
   weight: "100 900",
 });
 
 const geistMono = localFont({
-  src: "../fonts/GeistMono-Regular.woff2",
+  src: "../../public/fonts/GeistMono-Regular.woff2",
   variable: "--font-mono",
   display: "swap",
   weight: "100 900",
